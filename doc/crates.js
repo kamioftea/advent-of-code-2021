@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["advent_of_code_2021","aho_corasick","bitmaps","either","im","itertools","memchr","rand_core","rand_xoshiro","regex","regex_syntax","sized_chunks","text_io","typenum"];

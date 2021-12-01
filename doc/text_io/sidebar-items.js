@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error",""]],"fn":[["match_next",""],["parse_capture",""]],"macro":[["read","All text input is handled through this macro"],["scan","This macro allows to pass several variables so multiple values can be read"],["try_read",""],["try_scan",""]]});

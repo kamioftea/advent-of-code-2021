@@ -24,8 +24,8 @@ jobs:
       run: cargo doc
     - name: Commit Docs
       run: |
-        rm -rf doc 
-        cp -r target/doc doc 
+        rm -rf docs 
+        cp -r target/doc docs 
         git config --local user.email "bot@goblinoid.co.uk"
         git config --local user.name "Github Actions Bot"
         git add .

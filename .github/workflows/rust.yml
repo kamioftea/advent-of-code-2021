@@ -23,4 +23,4 @@ jobs:
     - name: Test Docs
       run: cargo doc
     - name: Commit Docs
-      run: rm -rf doc && cp -r target/doc doc && git commit -m"Commit doc updates" && git push
+      run: rm -rf doc && cp -r target/doc doc && git commit -m"Commit doc updates" --author "Git Hub Action<auto@goblinoid.co.uk>" && git push

@@ -23,4 +23,13 @@ jobs:
     - name: Test Docs
       run: cargo doc
     - name: Commit Docs
-      run: rm -rf doc && cp -r target/doc doc && git commit -m"Commit doc updates" --author "Git Hub Action<auto@goblinoid.co.uk>" && git push
+      run: |
+        rm -rf doc 
+        cp -r target/doc doc 
+        git config --local user.email "bot@goblinoid.co.uk"
+        git config --local user.name "Github Actions Bot"
+        git commit -m"Commit doc updates" -a
+    - name: Push Docs
+      uses: ad-m/github-push-action@master
+      with:
+        branch: ${{ github.ref }}

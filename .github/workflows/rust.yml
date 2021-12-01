@@ -29,7 +29,7 @@ jobs:
         git config --local user.email "bot@goblinoid.co.uk"
         git config --local user.name "Github Actions Bot"
         git add .
-        git commit -m"Commit doc updates" -a
+        git commit -m"Commit doc updates" -a || echo "No changes to commit"
     - name: Push Docs
       uses: ad-m/github-push-action@master
       with:

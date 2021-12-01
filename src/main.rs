@@ -1,24 +1,24 @@
 mod day_1;
-use std::time::Instant;
 use std::io::{self, Write};
+use std::time::Instant;
 
 extern crate core;
 
 #[macro_use]
 extern crate text_io;
-extern crate regex;
-extern crate proc_macro;
-extern crate im;
 extern crate either;
+extern crate im;
+extern crate proc_macro;
+extern crate regex;
+#[macro_use]
+extern crate itertools;
 
 fn main() {
     print!("Which day? (0 to run all): ");
     io::stdout().flush().unwrap();
 
     let day: i32 = read!();
-    let days:Vec<Box<dyn Fn()->()>> = vec!(
-        Box::new(|| day_1::run()),
-    );
+    let days: Vec<Box<dyn Fn() -> ()>> = vec![Box::new(|| day_1::run())];
 
     let start = Instant::now();
     match days.get((day - 1) as usize) {
@@ -29,10 +29,9 @@ fn main() {
             solution();
             println!("-- took {:.2?}", start.elapsed());
         }),
-        None => println!("Invalid Day {}", day)
+        None => println!("Invalid Day {}", day),
     }
 
     println!();
     println!("Finished in {:.2?}", start.elapsed());
 }
-

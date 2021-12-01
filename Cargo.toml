@@ -1,10 +1,11 @@
 [package]
-name = "advent-of-code-2020"
+name = "advent-of-code-2021"
 version = "0.1.0"
 authors = ["Jeff Horton <jeff@goblinoid.co.uk>"]
 
 [dependencies]
-text_io = "0.1.8"
-regex = "1.4.2"
+text_io = "0.1.9"
+regex = "1.5.4"
 im = "15.0.0"
 either = "1.6.1"
+itertools = "0.10.1"

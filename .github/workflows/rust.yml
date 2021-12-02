@@ -32,7 +32,9 @@ jobs:
         git config --local user.name "Github Actions Bot"
         git add .
         git commit -m"Commit doc updates" -a || echo "No changes to commit"
+        echo ${GITHUB_REF#refs/heads/}
+        git status
     - name: Push Docs
       uses: ad-m/github-push-action@master
       with:
-        branch: ${{ github.ref }}
+        branch: ${GITHUB_REF#refs/heads/}

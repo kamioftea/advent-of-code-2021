@@ -1,8 +1,6 @@
 name: Rust
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -16,8 +14,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
     - name: Build
       run: cargo build --verbose
     - name: Run tests

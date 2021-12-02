@@ -17,6 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        persist-credentials: false
         fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
     - name: Build
       run: cargo build --verbose
@@ -32,9 +33,8 @@ jobs:
         git config --local user.name "Github Actions Bot"
         git add .
         git commit -m"Commit doc updates" -a || echo "No changes to commit"
-        echo ${GITHUB_REF#refs/heads/}
-        git status
     - name: Push Docs
       uses: ad-m/github-push-action@master
       with:
-        branch: ${GITHUB_REF#refs/heads/}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}

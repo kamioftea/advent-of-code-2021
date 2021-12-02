@@ -1,4 +1,4 @@
-//! This is my solution for [Advent of Code - Day 1](https://adventofcode.com/2021/day/1) - _Sonar Sweep_
+//! This is my solution for [Advent of Code - Day 1 - _Sonar Sweep_](https://adventofcode.com/2021/day/1)
 //!
 //! The challenge today was to analyse a sequence of integer depths and determine a measure of
 //! how often these were increasing.
@@ -36,6 +36,7 @@ pub fn run() {
 /// Iterate over a moving window of pairs, returning the count where the second number is greater
 /// that the first.
 ///
+/// # Example from puzzle specification
 /// ```rust
 /// let input = vec![
 ///   199, // N/A - first item
@@ -67,6 +68,7 @@ fn count_increments(depths: &Vec<i32>) -> usize {
 /// Iterate over a moving window of three consecutive items, returning a vector where each item is
 /// the sum of te current window.
 ///
+/// # Example from puzzle specification
 /// ```rust
 /// assert_eq!(
 ///   sum_windows(&input),

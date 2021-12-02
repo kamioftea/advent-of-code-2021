@@ -18,7 +18,7 @@ jobs:
         fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
         ref: ghpages
     - name: Merge main
-      run: git merge main
+      run: git merge origin/main
     - name: Build Docs
       run: cargo doc
     - name: Commit Docs

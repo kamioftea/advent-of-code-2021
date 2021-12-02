@@ -1,10 +1,6 @@
 name: Rust
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: page_build
 
 env:
   CARGO_TERM_COLOR: always
@@ -24,3 +20,11 @@ jobs:
       run: cargo test --verbose
     - name: Test Docs
       run: cargo doc
+    - name: Commit Docs
+      run: |
+        rm -rf docs 
+        cp -r target/doc docs 
+        git config --local user.email "bot@goblinoid.co.uk"
+        git config --local user.name "Github Actions Bot"
+        git add .
+        git commit -m"Commit doc updates" -a || echo "No changes to commit"

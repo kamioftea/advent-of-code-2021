@@ -11,6 +11,12 @@ entry point to the script, and follows a pattern of asking for a day to run, the
 `day_X.rs` for each days' solutions. Unit tests for each day written based on the examples given in
 the puzzle descriptions are in a `tests` submodule in that day's file.
 
+There is a GitHub action that:
+- Builds the project
+- Runs the tests
+- Runs/verifies the docs
+- Copies the docs to the [GitHub Pages for the repository](https://kamioftea.github.io/advent-of-code-2021/advent_of_code_2021/)
+
 ## Previous years:
 - 2020 `36/50` Rust [Github](https://github.com/kamioftea/advent-of-code-2020/tree/master),
   [Puzzles](https://adventofcode.com/2020)

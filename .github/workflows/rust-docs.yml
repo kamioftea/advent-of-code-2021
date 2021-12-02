@@ -29,4 +29,5 @@ jobs:
         rm -rf docs 
         cp -r target/doc docs 
         git add .
-        git commit -m"Commit doc updates" -a && git push || echo "No changes to commit"
+        git commit -m"Commit doc updates" -a || echo "No changes to commit"
+        git push

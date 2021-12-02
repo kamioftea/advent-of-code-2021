@@ -18,14 +18,15 @@ jobs:
         fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
         ref: ghpages
     - name: Merge main
-      run: git merge origin/main
+      run: |
+        git config --local user.email "bot@goblinoid.co.uk"
+        git config --local user.name "Github Actions Bot"
+        git merge origin/main
     - name: Build Docs
       run: cargo doc
     - name: Commit Docs
       run: |
         rm -rf docs 
         cp -r target/doc docs 
-        git config --local user.email "bot@goblinoid.co.uk"
-        git config --local user.name "Github Actions Bot"
         git add .
         git commit -m"Commit doc updates" -a && git push || echo "No changes to commit"

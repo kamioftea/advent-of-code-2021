@@ -9,7 +9,6 @@ extern crate core;
 
 #[macro_use]
 extern crate text_io;
-#[macro_use]
 extern crate itertools;
 
 fn main() {

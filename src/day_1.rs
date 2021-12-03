@@ -10,7 +10,9 @@
 //! Part two expands on that, requiring the same count be run on the sums of a moving window of
 //! three consecutive values over the input. [`sum_windows`] provides a vector of these sums, which
 //! is suitable to then be passed to [`count_increments`] to produce the final answer. For this I
-//! included itertools to provide a cleaner way to zip three iterators together
+//! originally included itertools to use their `izip!` macro to zip three iterators together, each
+//! offset by one more. I updated it to use [`slice::windows`] thanks to [@bjgill's](https://github.com/bjgill/advent-of-code-2021/blob/1f086dcb6d5cd9bc1152a9a0db87d16b67d2cdb2/src/bin/day1.rs#L20)
+//! comment on the x-gov slack channel.
 use std::fs;
 
 /// This is the entry point for the day's puzzle solutions. It will load the input file, parse it
@@ -86,9 +88,10 @@ fn count_increments(depths: &Vec<i32>) -> usize {
 /// ```
 fn sum_windows(depths: &Vec<i32>) -> Vec<i32> {
     // create the moving window by combining iterators over the input offset by 0, 1, and 2
-    return izip!(depths.iter(), depths.iter().skip(1), depths.iter().skip(2))
+    return depths
+        .windows(3)
         // map those to the sum of the window
-        .map(|(a, b, c)| a + b + c)
+        .map(|window| window.iter().sum())
         // and coerce to the expected output type
         .collect();
 }

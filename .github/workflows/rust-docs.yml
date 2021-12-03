@@ -1,4 +1,4 @@
-name: Push Rush Docs to GitHub Pages
+name: Build and Push Rust Docs to GitHub Pages
 
 on:
   push:

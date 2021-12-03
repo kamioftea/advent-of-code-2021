@@ -176,7 +176,6 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
-<span id="179">179</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 2 - _Dive!_](https://adventofcode.com/2021/day/2)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today involves parsing a sequence of instructions that direct the submarine to move on a grid.</span>
@@ -191,9 +190,8 @@
 <span class="doccomment">//! [`navigate`]. Part two tracks a third variable &#39;aim&#39;, but is otherwise very similar. The logic</span>
 <span class="doccomment">//! is implemented by [`navigate_and_aim`].</span>
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_2::Direction</span>::{<span class="ident">DOWN</span>, <span class="ident">FORWARD</span>, <span class="ident">UP</span>};
 <span class="kw">use</span> <span class="ident">std::fs</span>;
-
-<span class="kw">use</span> <span class="ident">day_2::Direction</span>::{<span class="ident">DOWN</span>, <span class="ident">FORWARD</span>, <span class="ident">UP</span>};
 
 <span class="doccomment">/// There are three direction strings expected in the input. Parsing those into an Enum type helps</span>
 <span class="doccomment">/// doing exhaustive matches later</span>
@@ -322,8 +320,8 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">day_2::Direction</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">day_2</span>::{<span class="ident">navigate</span>, <span class="ident">navigate_and_aim</span>, <span class="ident">parse_line</span>, <span class="ident">Instruction</span>};
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_2::Direction</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_2</span>::{<span class="ident">navigate</span>, <span class="ident">navigate_and_aim</span>, <span class="ident">parse_line</span>, <span class="ident">Instruction</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">can_parse</span>() {

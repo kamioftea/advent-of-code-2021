@@ -280,6 +280,13 @@
 <span id="280">280</span>
 <span id="281">281</span>
 <span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 3 - _Binary Diagnostic_](https://adventofcode.com/2021/day/3)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today the task was to analyse a sequence of binary data with a bunch of bitwise operators. I</span>
@@ -489,8 +496,12 @@
         }
 
         <span class="comment">// Sanity check to prevent infinite recursion.</span>
-        <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;Non-unique result?&quot;</span>)
+        <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">position</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="macro">panic!</span>(
+                <span class="string">&quot;Non-unique result found. current position {}. This can occur when all values have \
+                 the same bit at a position, or when the input contains a duplicate value.&quot;</span>,
+                <span class="ident">position</span>
+            )
         }
 
         <span class="kw">let</span> <span class="ident">bitmask</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">position</span> <span class="op">-</span> <span class="number">1</span>;
@@ -557,7 +568,10 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
+    <span class="attribute">#[<span class="ident">should_panic</span>(
+        <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;Non-unique result found. current position 2. This can occur when \
+    all values have the same bit at a position, or when the input contains a duplicate value.&quot;</span>
+    )]</span>
     <span class="kw">fn</span> <span class="ident">does_not_infinitely_recurse_on_invalid_input</span>() {
         <span class="ident">analyse_life_support</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0b100</span>, <span class="number">0b101</span>, <span class="number">0b110</span>], <span class="number">3</span>);
     }

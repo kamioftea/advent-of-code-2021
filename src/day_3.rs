@@ -85,7 +85,7 @@ fn analyse_life_support(data: &Vec<usize>, length: usize) -> (usize, usize) {
 
 #[cfg(test)]
 mod tests {
-    use day_3::{analyse_diagnostics, analyse_life_support, count_bit, parse_input};
+    use crate::day_3::{analyse_diagnostics, analyse_life_support, count_bit, parse_input};
 
     fn test_data() -> Vec<usize> {
         vec![4, 30, 22, 23, 21, 15, 7, 28, 16, 25, 2, 10]

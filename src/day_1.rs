@@ -95,7 +95,7 @@ fn sum_windows(depths: &Vec<i32>) -> Vec<i32> {
 
 #[cfg(test)]
 mod tests {
-    use day_1::{count_increments, sum_windows};
+    use crate::day_1::{count_increments, sum_windows};
 
     #[test]
     fn can_count_increments() {

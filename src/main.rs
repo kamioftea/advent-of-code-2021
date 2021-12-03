@@ -9,10 +9,6 @@ extern crate core;
 
 #[macro_use]
 extern crate text_io;
-extern crate either;
-extern crate im;
-extern crate proc_macro;
-extern crate regex;
 #[macro_use]
 extern crate itertools;
 

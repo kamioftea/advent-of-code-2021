@@ -1,5 +1,6 @@
 mod day_1;
 mod day_2;
+mod day_3;
 
 use std::io::{self, Write};
 use std::time::Instant;
@@ -20,7 +21,11 @@ fn main() {
     io::stdout().flush().unwrap();
 
     let day: i32 = read!();
-    let days: Vec<Box<dyn Fn() -> ()>> = vec![Box::new(|| day_1::run()), Box::new(|| day_2::run())];
+    let days: Vec<Box<dyn Fn() -> ()>> = vec![
+        Box::new(|| day_1::run()),
+        Box::new(|| day_2::run()),
+        Box::new(|| day_3::run()),
+    ];
 
     let start = Instant::now();
     match days.get((day - 1) as usize) {

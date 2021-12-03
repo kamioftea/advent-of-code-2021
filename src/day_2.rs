@@ -12,9 +12,8 @@
 //! [`navigate`]. Part two tracks a third variable 'aim', but is otherwise very similar. The logic
 //! is implemented by [`navigate_and_aim`].
 
+use crate::day_2::Direction::{DOWN, FORWARD, UP};
 use std::fs;
-
-use day_2::Direction::{DOWN, FORWARD, UP};
 
 /// There are three direction strings expected in the input. Parsing those into an Enum type helps
 /// doing exhaustive matches later
@@ -143,8 +142,8 @@ fn navigate_and_aim(instructions: &Vec<Instruction>) -> (isize, isize, isize) {
 
 #[cfg(test)]
 mod tests {
-    use day_2::Direction::*;
-    use day_2::{navigate, navigate_and_aim, parse_line, Instruction};
+    use crate::day_2::Direction::*;
+    use crate::day_2::{navigate, navigate_and_aim, parse_line, Instruction};
 
     #[test]
     fn can_parse() {

@@ -7,12 +7,12 @@
 //! of bits per string as that is needed for some of the bitwise tricks later.
 //! [`analyse_diagnostics`] solves part one, deferring some logic to [`count_bit`]. Originally this
 //! was a double for loop over data and bit position, storing the counts into a mutable Vec<usize>.
-//! I needed [`count_bits`] for my original solution to part two, and once written I refactored
+//! I needed [`count_bit`] for my original solution to part two, and once written I refactored
 //! [`analyse_diagnostics`] to use it as well. When I later refactored [`analyse_life_support`] to
-//! no longer need [`count_bits`], [`analyse_diagnostics`] was still cleaner when using
-//! [`count_bits`] so I left it as is.
+//! no longer need [`count_bit`], [`analyse_diagnostics`] was still cleaner when using
+//! [`count_bit`] so I left it as is.
 //!
-//! [`analyse_life_support`] solves part two. Originally it used [`count_bits`] to determine if
+//! [`analyse_life_support`] solves part two. Originally it used [`count_bit`] to determine if
 //! the bits at the current position were majority set or not, then filtered the current subset
 //! based on that. The current partition based approach is easier to understand what is going on.
 
@@ -40,7 +40,7 @@ pub fn run() {
 }
 
 /// Returns a pair of the parsed data and the length of the bit strings. Delegates to the built in
-/// [`usize::from_str_radix`]. The length is needed for some of the bitwise tricks.
+/// [`usifix ze::from_str_radix`]. The length is needed for some of the bitwise tricks.
 ///
 /// # Example from puzzle specification
 /// ```rust

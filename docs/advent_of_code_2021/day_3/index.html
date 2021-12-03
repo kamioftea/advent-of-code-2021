@@ -5,11 +5,11 @@ ended up reworking both parts after I originally got them working with more conv
 of bits per string as that is needed for some of the bitwise tricks later.
 <a href="fn.analyse_diagnostics.html" title="analyse_diagnostics"><code>analyse_diagnostics</code></a> solves part one, deferring some logic to <a href="fn.count_bit.html" title="count_bit"><code>count_bit</code></a>. Originally this
 was a double for loop over data and bit position, storing the counts into a mutable Vec<usize>.
-I needed [<code>count_bits</code>] for my original solution to part two, and once written I refactored
+I needed <a href="fn.count_bit.html" title="count_bit"><code>count_bit</code></a> for my original solution to part two, and once written I refactored
 <a href="fn.analyse_diagnostics.html" title="analyse_diagnostics"><code>analyse_diagnostics</code></a> to use it as well. When I later refactored <a href="fn.analyse_life_support.html" title="analyse_life_support"><code>analyse_life_support</code></a> to
-no longer need [<code>count_bits</code>], <a href="fn.analyse_diagnostics.html" title="analyse_diagnostics"><code>analyse_diagnostics</code></a> was still cleaner when using
-[<code>count_bits</code>] so I left it as is.</p>
-<p><a href="fn.analyse_life_support.html" title="analyse_life_support"><code>analyse_life_support</code></a> solves part two. Originally it used [<code>count_bits</code>] to determine if
+no longer need <a href="fn.count_bit.html" title="count_bit"><code>count_bit</code></a>, <a href="fn.analyse_diagnostics.html" title="analyse_diagnostics"><code>analyse_diagnostics</code></a> was still cleaner when using
+<a href="fn.count_bit.html" title="count_bit"><code>count_bit</code></a> so I left it as is.</p>
+<p><a href="fn.analyse_life_support.html" title="analyse_life_support"><code>analyse_life_support</code></a> solves part two. Originally it used <a href="fn.count_bit.html" title="count_bit"><code>count_bit</code></a> to determine if
 the bits at the current position were majority set or not, then filtered the current subset
 based on that. The current partition based approach is easier to understand what is going on.</p>
 </div></details><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
@@ -28,7 +28,7 @@ flag used to switch the mode.</p>
 the value. Utility function used by <a href="fn.analyse_diagnostics.html" title="analyse_diagnostics"><code>analyse_diagnostics</code></a>. For this puzzle, only one bit is
 set in the mask at a time.</p>
 </div><div class="item-left module-item"><a class="fn" href="fn.parse_input.html" title="advent_of_code_2021::day_3::parse_input fn">parse_input</a></div><div class="item-right docblock-short"><p>Returns a pair of the parsed data and the length of the bit strings. Delegates to the built in
-<a href="https://doc.rust-lang.org/1.56.1/std/primitive.usize.html#method.from_str_radix" title="usize::from_str_radix"><code>usize::from_str_radix</code></a>. The length is needed for some of the bitwise tricks.</p>
+[<code>usifix ze::from_str_radix</code>]. The length is needed for some of the bitwise tricks.</p>
 </div><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_3::run fn">run</a></div><div class="item-right docblock-short"><p>The entry point for running the solutions with the ‘real’ puzzle input.</p>
 </div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script>

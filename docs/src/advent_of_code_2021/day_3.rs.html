@@ -296,12 +296,12 @@
 <span class="doccomment">//! of bits per string as that is needed for some of the bitwise tricks later.</span>
 <span class="doccomment">//! [`analyse_diagnostics`] solves part one, deferring some logic to [`count_bit`]. Originally this</span>
 <span class="doccomment">//! was a double for loop over data and bit position, storing the counts into a mutable Vec&lt;usize&gt;.</span>
-<span class="doccomment">//! I needed [`count_bits`] for my original solution to part two, and once written I refactored</span>
+<span class="doccomment">//! I needed [`count_bit`] for my original solution to part two, and once written I refactored</span>
 <span class="doccomment">//! [`analyse_diagnostics`] to use it as well. When I later refactored [`analyse_life_support`] to</span>
-<span class="doccomment">//! no longer need [`count_bits`], [`analyse_diagnostics`] was still cleaner when using</span>
-<span class="doccomment">//! [`count_bits`] so I left it as is.</span>
+<span class="doccomment">//! no longer need [`count_bit`], [`analyse_diagnostics`] was still cleaner when using</span>
+<span class="doccomment">//! [`count_bit`] so I left it as is.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [`analyse_life_support`] solves part two. Originally it used [`count_bits`] to determine if</span>
+<span class="doccomment">//! [`analyse_life_support`] solves part two. Originally it used [`count_bit`] to determine if</span>
 <span class="doccomment">//! the bits at the current position were majority set or not, then filtered the current subset</span>
 <span class="doccomment">//! based on that. The current partition based approach is easier to understand what is going on.</span>
 
@@ -329,7 +329,7 @@
 }
 
 <span class="doccomment">/// Returns a pair of the parsed data and the length of the bit strings. Delegates to the built in</span>
-<span class="doccomment">/// [`usize::from_str_radix`]. The length is needed for some of the bitwise tricks.</span>
+<span class="doccomment">/// [`usifix ze::from_str_radix`]. The length is needed for some of the bitwise tricks.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Example from puzzle specification</span>
 <span class="doccomment">/// ```rust</span>

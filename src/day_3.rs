@@ -207,8 +207,12 @@ fn analyse_life_support(data: &Vec<usize>, length: usize) -> (usize, usize) {
         }
 
         // Sanity check to prevent infinite recursion.
-        if current.len() == 0 {
-            panic!("Non-unique result?")
+        if current.len() == 0 || position == 0 {
+            panic!(
+                "Non-unique result found. current position {}. This can occur when all values have \
+                 the same bit at a position, or when the input contains a duplicate value.",
+                position
+            )
         }
 
         let bitmask = 1 << position - 1;
@@ -275,7 +279,10 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(
+        expected = "Non-unique result found. current position 2. This can occur when \
+    all values have the same bit at a position, or when the input contains a duplicate value."
+    )]
     fn does_not_infinitely_recurse_on_invalid_input() {
         analyse_life_support(&vec![0b100, 0b101, 0b110], 3);
     }

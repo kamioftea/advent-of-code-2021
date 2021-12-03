@@ -19,4 +19,6 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
     - name: Test Docs
-      run: cargo doc
+      run: |
+        export RUSTDOCFLAGS="-Dwarnings"
+        cargo doc

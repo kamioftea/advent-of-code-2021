@@ -82,7 +82,7 @@ pub fn run() {
     println!("There are {} full intersections", intersections.len());
 }
 
-/// Takes a string with lines in the form `(x1,y1) -> (x2,y2)` and converts it into a list of [`Lines`]s. Parsed
+/// Takes a string with lines in the form `(x1,y1) -> (x2,y2)` and converts it into a list of [`Line`]s. Parsed
 /// using a regular expression.
 fn parse_input(input: String) -> Vec<Line> {
     let line_matcher = Regex::new(r"(\d+),(\d+) -> (\d+),(\d+)").unwrap();

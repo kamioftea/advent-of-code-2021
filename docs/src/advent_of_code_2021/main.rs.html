@@ -40,10 +40,13 @@
 <span id="40">40</span>
 <span id="41">41</span>
 <span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">day_1</span>;
 <span class="kw">mod</span> <span class="ident">day_2</span>;
 <span class="kw">mod</span> <span class="ident">day_3</span>;
 <span class="kw">mod</span> <span class="ident">day_4</span>;
+<span class="kw">mod</span> <span class="ident">day_5</span>;
 
 <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std::time::Instant</span>;
@@ -65,6 +68,7 @@
         <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_2::run</span>()),
         <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_3::run</span>()),
         <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_4::run</span>()),
+        <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_5::run</span>()),
     ];
 
     <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">Instant::now</span>();

@@ -145,7 +145,7 @@ fn play_bingo_until_last(numbers: &Vec<u8>, cards: &Vec<BingoCard>) -> (BingoCar
 /// Parse the puzzle input into the internal representation. first there is a line of numbers in
 /// the sequence the will be called to mark on the cards, then 100 5 x 5 grids of numbers
 /// representing each card. The first line and each card are separated by blank lines.
-fn parse_iput(contents: String) -> (Vec<u8>, Vec<BingoCard>) {
+fn parse_input(contents: String) -> (Vec<u8>, Vec<BingoCard>) {
     // Split on the double new lines that separate each section.
     let mut sections = contents.split("\n\n");
     // The first section is comma separated numbers

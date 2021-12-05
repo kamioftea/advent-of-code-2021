@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["advent_of_code_2021","either","itertools","text_io"];
+window.ALL_CRATES = ["advent_of_code_2021","aho_corasick","either","itertools","memchr","regex","regex_syntax","text_io"];

@@ -1,6 +1,7 @@
 mod day_1;
 mod day_2;
 mod day_3;
+mod day_4;
 
 use std::io::{self, Write};
 use std::time::Instant;
@@ -10,6 +11,7 @@ extern crate core;
 #[macro_use]
 extern crate text_io;
 extern crate itertools;
+extern crate regex;
 
 fn main() {
     print!("Which day? (0 to run all): ");
@@ -20,6 +22,7 @@ fn main() {
         Box::new(|| day_1::run()),
         Box::new(|| day_2::run()),
         Box::new(|| day_3::run()),
+        Box::new(|| day_4::run()),
     ];
 
     let start = Instant::now();

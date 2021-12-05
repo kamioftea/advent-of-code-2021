@@ -1,34 +1,40 @@
-//! This is my solution for [Advent of Code - Day 4 - _Title_](https://adventofcode.com/2021/day/4)
+//! This is my solution for [Advent of Code - Day 4 - _Giant Squid_](https://adventofcode.com/2021/day/4)
 //!
+//! Today we had to build an engine to track games of Bingo. Given a set of numbers that would be
+//! called, and a set of 100 bingo cards, the challenge was to work out the one that would win first
+//! (part one), and the one that would win last (part two). I'm quite pleased with the data
+//! structure I came up with to store the bingo cards, but there was a lot of fighting with the
+//! borrow checker so I've ended up with some ugly bits of code.
 //!
+//! The key to the solution is [`BingoCard`] and [`parse_card`] that turns the raw input into this
+//! internal representation. The game is then simulated by repeatedly calling
+//! [`BingoCard::mark_number`] until the criteria for the current part have been met.
+//! [`play_bingo`] implements part one and just runs until a card wins, [`play_bingo_until_last`]
+//! implements part two and removes cards from the set as they win until none are left. There is
+//! a final small helper [`BingoCard::sum_remaining`] that calculates the number needed for the
+//! final submission.
 
-use itertools::Itertools;
 use regex::Regex;
 use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
 use std::fs;
 
-#[derive(Eq, PartialEq, Clone)]
+/// This represents the key information to know if a 5 x 5 bingo card has won.
+#[derive(Eq, PartialEq, Debug, Clone)]
 struct BingoCard {
+    /// A Map indexing the remaining numbers to their co-ordinates on the grid
     numbers: HashMap<u8, (usize, usize)>,
+    /// A counter for each row, tracking how many numbers in that row have been removed
     rows: [u8; 5],
+    /// A counter for each column, tracking how many numbers in that column have been removed
     columns: [u8; 5],
 }
 
-impl Debug for BingoCard {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let parts: Vec<String> = self
-            .numbers
-            .keys()
-            .sorted()
-            .map(|k| format!("{}: {:?}", k, self.numbers.get(k).unwrap()))
-            .collect();
-
-        write!(f, "{}", parts.join("\n"))
-    }
-}
-
 impl BingoCard {
+    /// If the card contains the provided number, remove it from the unmarked numbers, increment
+    /// the count of marked numbers in the relevant row and column, then if either of these are
+    /// now 5, the card has won - return true, otherwise return false.
+    ///
+    /// If the number is not on the card, nothing changes, and return false.
     fn mark_number(&mut self, number: u8) -> bool {
         match self.numbers.get(&number) {
             Some(&(x, y)) => {
@@ -42,6 +48,8 @@ impl BingoCard {
         }
     }
 
+    /// The remaining numbers are the keys of the numbers hash map, as marked numbers are removed
+    /// from the map.
     fn sum_remaining(&self) -> usize {
         self.numbers.keys().map(|&k| k as usize).sum()
     }
@@ -75,50 +83,72 @@ pub fn run() {
     );
 }
 
+/// Iterate through the numbers, marking each card as appropriate. Return the first card to win and
+/// the number that triggered it, as both are needed to calculate the puzzle solution.
 fn play_bingo(numbers: &Vec<u8>, cards: &Vec<BingoCard>) -> (BingoCard, u8) {
+    // Create a mutable copy. The cards need to be mutable as marking a number on a card mutates it.
     let mut my_cards = cards.to_vec();
+    // Cache the size of the card list
     let size = my_cards.len();
     for &number in numbers {
+        // The borrow checker can't guarantee safety when iterating mutable values, so we need to
+        // iterate over the indexes...
         for i in 0..size {
-            if let Some(card) = my_cards.get_mut(i) {
-                if card.mark_number(number) {
-                    return (card.clone(), number);
-                }
+            // and do the mutable borrow within the loop.
+            let card = my_cards.get_mut(i).unwrap();
+            if card.mark_number(number) {
+                // mark number returns true if the card won
+                return (card.clone(), number);
             }
         }
     }
 
+    // This is unreachable for the puzzle input
     panic!("No winner after numbers exhausted")
 }
 
+/// Iterate through the numbers, marking each card as appropriate. Very similar to [`play_bingo`]
+/// except it needs to keep going until all cards have won. This leads to some complexity to
+/// manage removing the cards from the iterator as we're looping over the same list.
 fn play_bingo_until_last(numbers: &Vec<u8>, cards: &Vec<BingoCard>) -> (BingoCard, u8) {
+    // Create a mutable copy
     let mut my_cards = cards.to_vec();
+    // Track the current length of the active cards
     let mut size = my_cards.len();
     for &number in numbers {
-        let mut to_remove: Vec<usize> = Vec::new();
+        // The card index we get out of the inner for loop gets out of sync as cards are removed.
+        // Track these removals so that we can compensate when indexing into the Vec.
+        let mut removal_offset = 0;
         for i in 0..size {
-            let card = my_cards.get_mut(i).unwrap();
-            match (card.mark_number(number), size) {
-                (true, 1) => {
+            let actual_index = i - removal_offset;
+            let card = my_cards.get_mut(actual_index).unwrap();
+            // If the card wins it needs to be removed from the active set
+            if card.mark_number(number) {
+                // if it is the last one, were done - return the data needed for the puzzle result.
+                if size == 1 {
                     return (card.clone(), number);
                 }
-                (true, _) => {
-                    to_remove.push(i);
-                    size = size - 1;
-                }
-                (false, _) => {}
+
+                // otherwise remove the card from the active list, and keep the numbers used to
+                // iterate over them in sync.
+                my_cards.remove(actual_index);
+                removal_offset = removal_offset + 1;
+                size = size - 1;
             }
-        }
-        for (offset, &i) in to_remove.iter().enumerate() {
-            my_cards.remove(i - offset);
         }
     }
 
+    // This is unreachable for the puzzle input
     panic!("No winner after numbers exhausted")
 }
 
-fn parse_input(contents: String) -> (Vec<u8>, Vec<BingoCard>) {
+/// Parse the puzzle input into the internal representation. first there is a line of numbers in
+/// the sequence the will be called to mark on the cards, then 100 5 x 5 grids of numbers
+/// representing each card. The first line and each card are separated by blank lines.
+fn parse_iput(contents: String) -> (Vec<u8>, Vec<BingoCard>) {
+    // Split on the double new lines that separate each section.
     let mut sections = contents.split("\n\n");
+    // The first section is comma separated numbers
     let numbers: Vec<u8> = sections
         .next()
         .expect("Input file was empty")
@@ -129,11 +159,17 @@ fn parse_input(contents: String) -> (Vec<u8>, Vec<BingoCard>) {
         })
         .collect();
 
+    // Each remaining section is a bing card
     let cards: Vec<BingoCard> = sections.map(|input| parse_card(input)).collect();
 
     (numbers, cards)
 }
 
+/// This takes a string with 5 lines, each with 5 space-separated numbers, representing a 5 x 5
+/// bingo card. A regex is used to split the numbers on a line as single digit numbers cause
+/// there to be two spaces prefixing those numbers. [`Iterator::enumerate`] is used to track the
+/// current co-ordinates for building the map of unmarked numbers. The row and column arrays are
+/// initialised to 0s as no numbers have yet been marked.
 fn parse_card(input: &str) -> BingoCard {
     let splitter = Regex::new(" +").unwrap();
 
@@ -162,13 +198,13 @@ mod tests {
 
     fn test_card() -> BingoCard {
         #[rustfmt::skip] // keep map literal in grid format
-            let expected_numbers: HashMap<u8, (usize, usize)> =
+        let expected_numbers: HashMap<u8, (usize, usize)> =
             HashMap::from([
                 (22, (0, 0)), (13, (1, 0)), (17, (2, 0)), (11, (3, 0)),  (0, (4, 0)),
-                (8, (0, 1)),  (2, (1, 1)), (23, (2, 1)),  (4, (3, 1)), (24, (4, 1)),
+                 (8, (0, 1)),  (2, (1, 1)), (23, (2, 1)),  (4, (3, 1)), (24, (4, 1)),
                 (21, (0, 2)),  (9, (1, 2)), (14, (2, 2)), (16, (3, 2)),  (7, (4, 2)),
-                (6, (0, 3)), (10, (1, 3)),  (3, (2, 3)), (18, (3, 3)),  (5, (4, 3)),
-                (1, (0, 4)), (12, (1, 4)), (20, (2, 4)), (15, (3, 4)), (19, (4, 4)),
+                 (6, (0, 3)), (10, (1, 3)),  (3, (2, 3)), (18, (3, 3)),  (5, (4, 3)),
+                 (1, (0, 4)), (12, (1, 4)), (20, (2, 4)), (15, (3, 4)), (19, (4, 4)),
             ]);
 
         let expected_card = BingoCard {
@@ -272,7 +308,10 @@ mod tests {
         assert_eq!(card.rows, [5, 0, 0, 0, 0]);
         assert_eq!(card.columns, [1, 1, 1, 1, 1]);
 
+        // missing number ignored
         card.mark_number(99);
+        // duplicate number ignored
+        card.mark_number(22);
         assert_eq!(result, true);
         assert_eq!(card.rows, [5, 0, 0, 0, 0]);
         assert_eq!(card.columns, [1, 1, 1, 1, 1]);
@@ -290,7 +329,10 @@ mod tests {
     #[test]
     fn can_play_bingo_until_exhausted() {
         let (numbers, cards) = parse_input(test_input());
-        let (losing_card, number) = play_bingo_until_last(&numbers, &cards);
+        // The real result set has multiple cards that win with some numbers, so include duplicates
+        // in the test to ensure this is covered.
+        let cards_with_duplicates = cards.iter().flat_map(|c| [c.clone(), c.clone()]).collect();
+        let (losing_card, number) = play_bingo_until_last(&numbers, &cards_with_duplicates);
 
         assert_eq!(number, 13);
         assert_eq!(losing_card.sum_remaining(), 148)

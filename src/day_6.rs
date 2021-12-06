@@ -1,6 +1,13 @@
 //! This is my solution for [Advent of Code - Day 6 - _Lanternfish_](https://adventofcode.com/2021/day/6)
 //!
+//! There is always at least one puzzle each year where a naive implementation is fairly simple, but
+//! part two expands the problem size so that the naive solution will take too long to run. This is
+//! one of those.
 //!
+//! Experience from previous years allowed me to spot that and implement a more performant solution
+//! to part one, [`simulate`]. This requires the population count for each day, so there is also
+//! [`parse_input`] that reduces the puzzle input to this format. Part two calls [`simulate`] again,
+//! but with a higher number of days.
 
 use std::fs;
 
@@ -19,12 +26,17 @@ pub fn run() {
     println!("Population count after 256 days: {}", part_2_pop);
 }
 
+/// Reduces a comma-separated list of numbers representing the number of days until that fish will
+/// next reproduce, into a summary array that contains the count for each day.
 fn parse_input(input: String) -> [usize; 9] {
+    // parse the initial input to a list of `usize`
     let fish: Vec<usize> = input
         .trim()
         .split(',')
         .flat_map(|num| num.parse::<usize>().ok())
         .collect();
+
+    // iterate through the fish, incrementing the relevant count for each one.
     let mut fish_population = [0usize; 9usize];
     for f in fish {
         fish_population[f] = fish_population[f] + 1;
@@ -33,19 +45,27 @@ fn parse_input(input: String) -> [usize; 9] {
     fish_population
 }
 
+/// Recursive function that iterates the population `days` times, returning the resulting
+/// population summary.
 pub fn simulate(fish_pops: [usize; 9], days: usize) -> [usize; 9] {
+    // base case - return the current population
     if days == 0 {
         return fish_pops;
     }
 
+    // otherwise copy each of the populations is moved one day earlier
     let mut new_pops = [0usize; 9usize];
     for i in 1..=8 {
         new_pops[i - 1] = fish_pops[i];
     }
 
-    new_pops[6] = new_pops[6] + fish_pops[0];
+    // Fish in the 0-day population reproduce - creating an equal number of fish that will reproduce
+    // in 9 days.
     new_pops[8] = fish_pops[0];
+    // These fish also reset, and will reproduce again themselves in 7 days.
+    new_pops[6] = new_pops[6] + fish_pops[0];
 
+    // Recursively call, decrementing the remaining days
     return simulate(new_pops, days - 1);
 }
 

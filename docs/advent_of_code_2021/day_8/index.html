@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="This is my solution for Advent of Code - Day 8 - Seven Segment Search"><meta name="keywords" content="rust, rustlang, rust-lang, day_8"><title>advent_of_code_2021::day_8 - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../advent_of_code_2021/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><h2 class="location">Module day_8</h2><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#functions">Functions</a></li></ul></div><div id="sidebar-vars" data-name="day_8" data-ty="mod" data-relpath="./"></div><script defer src="./sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Module <a href="../index.html">advent_of_code_2021</a>::<wbr><a class="mod" href="#">day_8</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../src/advent_of_code_2021/day_8.rs.html#1-446" title="goto source code">[src]</a></span></h1><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>This is my solution for <a href="https://adventofcode.com/2021/day/8">Advent of Code - Day 8 - <em>Seven Segment Search</em></a></p>
+<p>Today had a lot of description for a relatively simple part one, that seemed to be leading into
+a much harder part two. The puzzle input is a sequence of lines in two parts, ten unique digits
+(i.e. 0-9) in a random order, then 4 other digits. But each digit is shown as the set of bars
+they light up on a digital display, each bar represented by a letter a-g, in a random order.
+To further complicate things, the wires that light up the bars have got swapped around - and the
+actual bars that light up is only consistent for each line.</p>
+<p>To show some examples:</p>
+<div class="example-wrap"><pre class="language-text"><code>Wiring correct - Order: a,b,c,d,e,f,g
+  1:      4:      8:     Sets shown when labelled in reading order
+ ....    ....    aaaa    1: cf, fc
+.    c  b    c  b    c   4: bcfd, cdbf, ...
+.    c  b    c  b    c   8: abcdefg, gfacbed, ...
+ ....    dddd    dddd  
+.    f  .    f  e    f
+.    f  .    f  e    f
+ ....    ....    gggg
+
+Wiring mixed up - Order: e,c,d,g,f,a,b
+  1:      4:      8:     Example sets that could be shown when labelled in reading order
+ ....    ....    eeee    1: be, eb
+c    .  c    d  c    d   4: bceg, gcbe, ...
+c    .  c    d  c    d   8: abcdefg, gfacbed, ... // doesn&#39;t change all are lit up
+ ....    ....    gggg  
+f    .  f    .  f    a
+f    .  f    .  f    a
+ ....    bbbb    bbbb</code></pre></div>
+<p>The overall puzzle seemed to be leaning towards working out what numbers were showing on each
+line. For part one it was noted that digits 1, 4, 7 and 8 each light up a unique number of bars.
+Due to this they can be identified by just counting the bars in the set. After all that preamble
+the challenge for part one was simple - count the number of digits in the output strings that
+are known to be 1, 4, 7, or 8 by their length.</p>
+<p>One way to solve this would be to just discard the set of ten unique combinations, reduce the
+outputs to their sizes filter out those of size 2 (1s), size 3 (7s), size 4 (4s), and size 7
+(8s). I felt this would be wasted work however as for part two I was going to need to identify
+which of the digits was which. I instead decided to implement an internal representation of each
+line as a <a href="struct.Display.html" title="Display"><code>Display</code></a> that had a map of the character set to the integer digit, plus the unknown
+digits for later analysis. To implement the minimum needed for part one, just the map entries
+for 1, 4, 7 and 8 would need to be created. The solution for part one is to filter the output
+lists to those that map to 1, 4, 7, or 8 in the digit map, count each of those and sum those
+counts for all displays. <a href="fn.count_unique.html" title="count_unique"><code>count_unique</code></a> implements this.</p>
+<p>The key piece of functionality, where all the hard work for part one and two is done is
+<a href="fn.parse_line.html" title="parse_line"><code>parse_line</code></a>. This takes the string line, and builds that map of known character sets to
+integer digits. I’d originally implemented the digits as <code>HashSet&lt;char&gt;</code>s. It needs to be a type
+where the order of the characters doesn’t matter. I also suspect it needs to be able to do
+efficient intersections of the sets, as whilst getting to grips with the specification I’d
+already noticed you can work out 0, 6 and 9 once you know 1 and 4 because 4 is a subset of 9,
+and 1 is a subset of 0 and 9. This hit a snag in that a <code>HashSet</code> doesn’t itself implement
+<code>Hash</code> so can’t be used as a key. I pondered sorting the strings and using that as the key, but
+the logic to calculate their intersections is pretty complex in Rust. Then I remembered
+<a href="../day_3/index.html" title="crate::day_3"><code>crate::day_3</code></a> and went with representing each of the 7 lines as a bit (giving a unique number
+for each set). Further, bitwise <code>&amp;</code> can be used to efficiently do the intersections. I gave this
+it’s own type <a href="struct.Digit.html" title="Digit"><code>Digit</code></a>, and hooked into the built-in FromStr trait to make creating these from
+the input cleaner. For part one only the first pass through the 10 digits was implemented, but
+I’m happy to report that my plan worked and I did not need to change my implementation of part
+one to cope with the changes added to solve part two.</p>
+<p>Part two required working out the remaining six digits, interpreting the four output digits as a
+4 digit decimal number, and summing those to get the puzzle solution. My implementation for part
+one was a good start to this. As noted above, 0, 6 and 9 can be worked out from 1 and 4. So I
+added a second pass through the unique digits to grab the three with length 6 that correspond to
+0, 6 and 9 in some order. These could then be tested as follows:</p>
+<ul>
+<li>Intersect the set of digits for #4 with the current set. If that’s unchanged, #4 is a subset
+and the current digit must be 9.</li>
+<li>Intersect the set of digits for #1 with the current set. If unchanged it’s either 0 or 9, and
+it can’t be 9 as it failed the first check. It must be 0.</li>
+<li>Otherwise it’s 6 by process of elimination.</li>
+</ul>
+<p>I added these to the test suite and confirmed it was all working.</p>
+<p>For 2, 3, and 5 a similar argument can be made, so a third loop was made just considering the
+digits with sets of length 5.</p>
+<ul>
+<li>1 is a subset of 3, but not 2 or 5 so intersect with the set for #1, if unchanged it must be 3</li>
+<li>5 is a subset of 9, but 2 (and 3) are not. This still intersects the current set with the set
+for #9, but instead check that the result is the same as the current set, since 5 is the
+subset.</li>
+<li>Again we can otherwise assume the current set represents 2 by process of elimination.</li>
+</ul>
+<p>Again this was added to the test suite and implemented. All ten digits are now known, so the
+final step was to implement <a href="struct.Display.html#method.get_output" title="Display::get_output"><code>Display::get_output</code></a> that converted the four output digits into
+the equivalent decimal <code>usize</code>, and I used built in iterate -&gt; map -&gt; sum to reduce the input
+to the solution.</p>
+</div></details><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="struct" href="struct.Digit.html" title="advent_of_code_2021::day_8::Digit struct">Digit</a></div><div class="item-right docblock-short"></div><div class="item-left module-item"><a class="struct" href="struct.Display.html" title="advent_of_code_2021::day_8::Display struct">Display</a></div><div class="item-right docblock-short"></div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="fn" href="fn.count_unique.html" title="advent_of_code_2021::day_8::count_unique fn">count_unique</a></div><div class="item-right docblock-short"><p>Given a list of parsed displays, count the total number of 1s, 4s, 7s, and 8s in their outputs</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.parse_input.html" title="advent_of_code_2021::day_8::parse_input fn">parse_input</a></div><div class="item-right docblock-short"><p>Utility for the whole puzzle input that just defers to <a href="fn.parse_line.html" title="parse_line"><code>parse_line</code></a> for each line of the
+input.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.parse_line.html" title="advent_of_code_2021::day_8::parse_line fn">parse_line</a></div><div class="item-right docblock-short"><p>This does all of the hard work. Once the input is turned into a <a href="struct.Display.html" title="Display"><code>Display</code></a> the puzzle solution
+is easy to calculate. The string is split up by the | and ’ ’ delimeteters and the resulting 14
+digits are parsed using <a href="struct.Digit.html#method.from_str" title="Digit::from_str"><code>Digit::from_str</code></a>. Then there are the three loops discussed in the
+preamble that identify 1, 4, 7 and 8; 0, 6 and 9, then finally 2, 3, and 5. Building the digits
+map needed for <a href="struct.Display.html" title="Display"><code>Display</code></a> as numbers are found.</p>
+</div><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_8::run fn">run</a></div><div class="item-right docblock-short"><p>The entry point for running the solutions with the ‘real’ puzzle input.</p>
+</div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script>
+</body></html>

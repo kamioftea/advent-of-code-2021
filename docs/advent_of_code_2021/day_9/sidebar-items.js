@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["run","The entry point for running the solutions with the ‘real’ puzzle input."]],"struct":[["Grid",""],["GridCoords","Temporary struct representing an iterator over a grid"]]});

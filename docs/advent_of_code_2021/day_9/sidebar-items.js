@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["run","The entry point for running the solutions with the ‘real’ puzzle input."]],"struct":[["Grid",""],["GridCoords","Temporary struct representing an iterator over a grid"]]});
+initSidebarItems({"fn":[["run","The entry point for running the solutions with the ‘real’ puzzle input."]],"struct":[["Grid","A representation of a 2D grid of numerical heights. Today’s solutions are implemented as methods for this type."],["GridCoords","Temporary struct representing an iterator over a grid"]]});

@@ -311,6 +311,7 @@
 <span id="311">311</span>
 <span id="312">312</span>
 <span id="313">313</span>
+<span id="314">314</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 9 - _Smoke Basin_](https://adventofcode.com/2021/day/9)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today&#39;s task was to find local minima (part one) of a grid of digits and the area within the watershed of those</span>
@@ -345,11 +346,12 @@
 <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 
+<span class="doccomment">/// A representation of a 2D grid of numerical heights. Today&#39;s solutions are implemented as methods for this type.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">Grid</span> {
     <span class="doccomment">/// Store the numbers in a 1D list...</span>
     <span class="ident">numbers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// ...and use the width to determine the 1D offset as a 2D co-orrdinate</span>
+    <span class="doccomment">/// ...and use the width to determine the 1D offset as a 2D co-ordinate</span>
     <span class="ident">width</span>: <span class="ident">usize</span>,
 }
 

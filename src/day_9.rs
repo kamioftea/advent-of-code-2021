@@ -12,15 +12,6 @@ struct Grid {
     width: usize,
 }
 
-impl Clone for Grid {
-    fn clone(&self) -> Self {
-        Grid {
-            numbers: self.numbers.to_vec(),
-            width: self.width,
-        }
-    }
-}
-
 impl From<String> for Grid {
     fn from(string: String) -> Self {
         let mut width: usize = 0;
@@ -40,12 +31,12 @@ impl From<String> for Grid {
     }
 }
 
-struct GridCoords {
-    grid: Grid,
+struct GridCoords<'a> {
+    grid: &'a Grid,
     pos: usize,
 }
 
-impl Iterator for GridCoords {
+impl<'a> Iterator for GridCoords<'a> {
     type Item = ((usize, usize), u8);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -56,19 +47,11 @@ impl Iterator for GridCoords {
     }
 }
 
-impl IntoIterator for Grid {
-    type Item = ((usize, usize), u8);
-    type IntoIter = GridCoords;
-
-    fn into_iter(self) -> Self::IntoIter {
-        return GridCoords {
-            grid: self.clone(),
-            pos: 0,
-        };
-    }
-}
-
 impl Grid {
+    fn iter(&self) -> GridCoords {
+        GridCoords { grid: self, pos: 0 }
+    }
+
     fn get_item(&self, y: usize, x: usize) -> Option<u8> {
         if x >= self.width {
             return None;
@@ -111,8 +94,7 @@ impl Grid {
     }
 
     fn get_low_points(&self) -> Vec<((usize, usize), u8)> {
-        self.clone()
-            .into_iter()
+        self.iter()
             .filter(|((y, x), _)| self.is_lowest(*y, *x))
             .collect()
     }
@@ -187,17 +169,11 @@ mod tests {
         assert_eq!(grid.get_item(5, 10), None);
 
         assert_eq!(
-            grid.clone()
-                .into_iter()
-                .take(3)
-                .collect::<Vec<((usize, usize), u8)>>(),
+            grid.iter().take(3).collect::<Vec<((usize, usize), u8)>>(),
             vec![((0, 0), 2), ((0, 1), 1), ((0, 2), 9)]
         );
         assert_eq!(
-            grid.clone()
-                .into_iter()
-                .skip(48)
-                .collect::<Vec<((usize, usize), u8)>>(),
+            grid.iter().skip(48).collect::<Vec<((usize, usize), u8)>>(),
             vec![((4, 8), 7), ((4, 9), 8)]
         );
     }
@@ -273,7 +249,7 @@ mod tests {
 
     fn _debug_basin(grid: Grid, basin: HashSet<(usize, usize)>) {
         let mut line = 0;
-        grid.clone().into_iter().for_each(|((y, x), h)| {
+        grid.iter().for_each(|((y, x), h)| {
             if line != y {
                 print!("\n");
                 line = y;

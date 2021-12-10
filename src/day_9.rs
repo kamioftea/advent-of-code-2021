@@ -32,11 +32,12 @@ use itertools::Itertools;
 use std::collections::HashSet;
 use std::fs;
 
+/// A representation of a 2D grid of numerical heights. Today's solutions are implemented as methods for this type.
 #[derive(Debug)]
 struct Grid {
     /// Store the numbers in a 1D list...
     numbers: Vec<u8>,
-    /// ...and use the width to determine the 1D offset as a 2D co-orrdinate
+    /// ...and use the width to determine the 1D offset as a 2D co-ordinate
     width: usize,
 }
 

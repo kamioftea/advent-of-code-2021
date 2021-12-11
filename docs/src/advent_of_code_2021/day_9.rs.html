@@ -240,86 +240,17 @@
 <span id="240">240</span>
 <span id="241">241</span>
 <span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 9 - _Smoke Basin_](https://adventofcode.com/2021/day/9)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! _**Note**: At the time of writing [`Grid`] was part of the Day 9 module. Parts that were reused for Day 11 have</span>
+<span class="doccomment">//! since been extracted into a utility module._</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today&#39;s task was to find local minima (part one) of a grid of digits and the area within the watershed of those</span>
 <span class="doccomment">//! (part two). For this I built a type to represent a [`Grid`] and implemented a bunch of methods to build towards a</span>
 <span class="doccomment">//! solution. I&#39;ve tried to lean more on the standard library and built in traits to accomplish some of this,</span>
 <span class="doccomment">//! specifically using `impl From&lt;String&gt; for Grid` for the initial parsing, and providing [`Grid::iter`] which returns</span>
-<span class="doccomment">//! a [`GridCoords`] which has an implementation for [`Iterator`] as a standard way to iterate all the cells in the</span>
-<span class="doccomment">//! grid.</span>
+<span class="doccomment">//! a [`crate::util::grid::GridCoords`] which has an implementation for [`Iterator`] as a standard way to iterate all</span>
+<span class="doccomment">//! the cells in the grid.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! I had to work at getting [`Grid::iter`] correct and my original code was implementing [`IntoIterator`] for Grid,</span>
 <span class="doccomment">//! and the iterator was contained the grid itself, which in turn was (because I was struggling with exactly where the</span>
@@ -333,106 +264,28 @@
 <span class="doccomment">//! the width of the grid to work out the correct offset in the list for a given x and y, implemented as [`Grid::get`].</span>
 <span class="doccomment">//! Working the other way, [`Grid::get_with_coords`] is used by the iterator to work out the 2D co-ordinates of its</span>
 <span class="doccomment">//! current position. [`Grid::get_low_points`] filters the iterator of all points in the grid to just the local minima,</span>
-<span class="doccomment">//! this defers to [`Grid::is_lowest`] which in turn uses [`Grid::get_surrounds`] to check the current value against its</span>
-<span class="doccomment">//! four neighbours. [`Grid::get_risk_level`] takes the result of [`Grid::get_low_points`] and reduces it to the</span>
-<span class="doccomment">//! puzzle solution for part one.</span>
+<span class="doccomment">//! this defers to [`Grid::is_lowest`] which in turn uses [`Grid::get_orthogonal_surrounds`] to check the current value</span>
+<span class="doccomment">//! against its four neighbours. [`Grid::get_risk_level`] takes the result of [`Grid::get_low_points`] and reduces it to</span>
+<span class="doccomment">//! the puzzle solution for part one.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! To solve part two, [`Grid::get_basin`] uses [`Grid::get_surrounds`], filtering to only larger numbers less than the</span>
-<span class="doccomment">//! watershed of 9 to recursively build a set of co-ordinates by walking uphill. [`Grid::get_largest_basin_sizes`] is</span>
-<span class="doccomment">//! a wrapper that calls [`Grid::get_basin`] for each low point, and the reduces the returned data into the puzzle</span>
-<span class="doccomment">//! solution.</span>
+<span class="doccomment">//! To solve part two, [`Grid::get_basin`] uses [`Grid::get_orthogonal_surrounds`], filtering to only larger numbers</span>
+<span class="doccomment">//! less than the watershed of 9 to recursively build a set of co-ordinates by walking uphill.</span>
+<span class="doccomment">//! [`Grid::get_largest_basin_sizes`] is a wrapper that calls [`Grid::get_basin`] for each low point, and the reduces</span>
+<span class="doccomment">//! the returned data into the puzzle solution.</span>
 
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
 <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 
-<span class="doccomment">/// A representation of a 2D grid of numerical heights. Today&#39;s solutions are implemented as methods for this type.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Grid</span> {
-    <span class="doccomment">/// Store the numbers in a 1D list...</span>
-    <span class="ident">numbers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// ...and use the width to determine the 1D offset as a 2D co-ordinate</span>
-    <span class="ident">width</span>: <span class="ident">usize</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Grid</span> {
-    <span class="doccomment">/// Turn the characters into digits and concatenate, caching the width</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">string</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">width</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
-
-        <span class="kw">let</span> <span class="ident">numbers</span> <span class="op">=</span> <span class="ident">string</span>
-            .<span class="ident">lines</span>()
-            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> {
-                <span class="ident">width</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">len</span>();
-                <span class="kw">return</span> <span class="ident">line</span>.<span class="ident">chars</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> {
-                    <span class="ident">c</span>.<span class="ident">to_digit</span>(<span class="number">10</span>)
-                        .<span class="ident">expect</span>(<span class="macro">format!</span>(<span class="string">&quot;{} is not a digit&quot;</span>, <span class="ident">c</span>).<span class="ident">as_str</span>()) <span class="kw">as</span> <span class="ident">u8</span>
-                });
-            })
-            .<span class="ident">collect</span>();
-
-        <span class="ident">Grid</span> { <span class="ident">numbers</span>, <span class="ident">width</span> }
-    }
-}
-
-<span class="doccomment">/// Temporary struct representing an iterator over a grid</span>
-<span class="kw">struct</span> <span class="ident">GridCoords</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Reference to the grid being iterated</span>
-    <span class="ident">grid</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Grid</span>,
-    <span class="doccomment">/// The current position of the iterator</span>
-    <span class="ident">pos</span>: <span class="ident">usize</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">GridCoords</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> ((<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u8</span>);
-
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">curr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">grid</span>.<span class="ident">get_with_coords</span>(<span class="self">self</span>.<span class="ident">pos</span>);
-        <span class="self">self</span>.<span class="ident">pos</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pos</span> <span class="op">+</span> <span class="number">1</span>;
-
-        <span class="ident">curr</span>
-    }
-}
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::grid::Grid</span>;
 
 <span class="kw">impl</span> <span class="ident">Grid</span> {
-    <span class="doccomment">/// Helper to abstract iterating over the whole grid</span>
-    <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">GridCoords</span> {
-        <span class="ident">GridCoords</span> { <span class="ident">grid</span>: <span class="self">self</span>, <span class="ident">pos</span>: <span class="number">0</span> }
-    }
-
-    <span class="doccomment">/// Return the value at the given co-ordinates</span>
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">width</span> {
-            <span class="kw">return</span> <span class="prelude-val">None</span>;
-        }
-        <span class="self">self</span>.<span class="ident">numbers</span>.<span class="ident">get</span>(<span class="ident">x</span> <span class="op">+</span> <span class="ident">y</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">width</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>)
-    }
-
-    <span class="doccomment">/// Used by [`GridCoords::next`] to turn the current iterator position into the x/y co-ordinates and the value in</span>
-    <span class="doccomment">/// that cell.</span>
-    <span class="kw">fn</span> <span class="ident">get_with_coords</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>((<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u8</span>)<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">pos</span> <span class="op">%</span> <span class="self">self</span>.<span class="ident">width</span>;
-        <span class="kw">let</span> <span class="ident">y</span> <span class="op">=</span> <span class="ident">pos</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">width</span>;
-
-        <span class="self">self</span>.<span class="ident">numbers</span>.<span class="ident">get</span>(<span class="ident">pos</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">val</span><span class="op">|</span> ((<span class="ident">y</span>, <span class="ident">x</span>), <span class="ident">val</span>))
-    }
-
     <span class="doccomment">/// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates</span>
     <span class="doccomment">/// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.</span>
-    <span class="kw">fn</span> <span class="ident">get_surrounds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>((<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u8</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_orthogonal_surrounds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>((<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u8</span>)<span class="op">&gt;</span> {
         [(<span class="op">-</span><span class="number">1</span>, <span class="number">0</span>), (<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">0</span>), (<span class="number">0</span>, <span class="op">-</span><span class="number">1</span>)] <span class="comment">// N E S W</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="op">|</span>(<span class="ident">dy</span>, <span class="ident">dx</span>)<span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">y1</span> <span class="op">=</span> (<span class="ident">y</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">+</span> <span class="ident">dy</span>;
-                <span class="kw">let</span> <span class="ident">x1</span> <span class="op">=</span> (<span class="ident">x</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">+</span> <span class="ident">dx</span>;
-
-                <span class="kw">if</span> <span class="ident">y1</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">x1</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span> {
-                    <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">y1</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">x1</span> <span class="kw">as</span> <span class="ident">usize</span>)
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> ((<span class="ident">y1</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">x1</span> <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">val</span>))
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
-            })
+            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">dy</span>, <span class="ident">dx</span>)<span class="op">|</span> <span class="self">self</span>.<span class="ident">get_relative</span>(<span class="ident">y</span>, <span class="ident">x</span>, <span class="ident">dy</span>, <span class="ident">dx</span>))
             .<span class="ident">collect</span>()
     }
 
@@ -440,7 +293,7 @@
     <span class="kw">fn</span> <span class="ident">is_lowest</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">y</span>, <span class="ident">x</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">val</span><span class="op">|</span> {
-                <span class="self">self</span>.<span class="ident">get_surrounds</span>(<span class="ident">y</span>, <span class="ident">x</span>)
+                <span class="self">self</span>.<span class="ident">get_orthogonal_surrounds</span>(<span class="ident">y</span>, <span class="ident">x</span>)
                     .<span class="ident">iter</span>()
                     .<span class="ident">all</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw">_</span>, <span class="ident">adjacent</span>)<span class="op">|</span> <span class="ident">val</span> <span class="op">&lt;</span> <span class="ident">adjacent</span>)
             })
@@ -469,7 +322,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">basin</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">height</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">y</span>, <span class="ident">x</span>) {
             <span class="ident">basin</span>.<span class="ident">insert</span>((<span class="ident">y</span>, <span class="ident">x</span>));
-            <span class="self">self</span>.<span class="ident">get_surrounds</span>(<span class="ident">y</span>, <span class="ident">x</span>)
+            <span class="self">self</span>.<span class="ident">get_orthogonal_surrounds</span>(<span class="ident">y</span>, <span class="ident">x</span>)
                 .<span class="ident">iter</span>()
                 .<span class="ident">filter</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">h</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">h</span> <span class="op">&gt;</span> <span class="ident">height</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">h</span> <span class="op">&lt;</span> <span class="number">9</span>)
                 .<span class="ident">flat_map</span>(<span class="op">|</span>((<span class="ident">y1</span>, <span class="ident">x1</span>), <span class="kw">_</span>)<span class="op">|</span> <span class="self">self</span>.<span class="ident">get_basin</span>(<span class="kw-2">*</span><span class="ident">y1</span>, <span class="kw-2">*</span><span class="ident">x1</span>))
@@ -554,13 +407,16 @@
     <span class="kw">fn</span> <span class="ident">can_get_surrounds</span>() {
         <span class="kw">let</span> <span class="ident">grid</span> <span class="op">=</span> <span class="ident">get_sample_grid</span>();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">grid</span>.<span class="ident">get_surrounds</span>(<span class="number">0</span>, <span class="number">0</span>), <span class="macro">vec!</span>[((<span class="number">0</span>, <span class="number">1</span>), <span class="number">1</span>), ((<span class="number">1</span>, <span class="number">0</span>), <span class="number">3</span>)]);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">grid</span>.<span class="ident">get_surrounds</span>(<span class="number">0</span>, <span class="number">1</span>),
+            <span class="ident">grid</span>.<span class="ident">get_orthogonal_surrounds</span>(<span class="number">0</span>, <span class="number">0</span>),
+            <span class="macro">vec!</span>[((<span class="number">0</span>, <span class="number">1</span>), <span class="number">1</span>), ((<span class="number">1</span>, <span class="number">0</span>), <span class="number">3</span>)]
+        );
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">grid</span>.<span class="ident">get_orthogonal_surrounds</span>(<span class="number">0</span>, <span class="number">1</span>),
             <span class="macro">vec!</span>[((<span class="number">0</span>, <span class="number">2</span>), <span class="number">9</span>), ((<span class="number">1</span>, <span class="number">1</span>), <span class="number">9</span>), ((<span class="number">0</span>, <span class="number">0</span>), <span class="number">2</span>)]
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">grid</span>.<span class="ident">get_surrounds</span>(<span class="number">1</span>, <span class="number">1</span>),
+            <span class="ident">grid</span>.<span class="ident">get_orthogonal_surrounds</span>(<span class="number">1</span>, <span class="number">1</span>),
             <span class="macro">vec!</span>[((<span class="number">0</span>, <span class="number">1</span>), <span class="number">1</span>), ((<span class="number">1</span>, <span class="number">2</span>), <span class="number">8</span>), ((<span class="number">2</span>, <span class="number">1</span>), <span class="number">8</span>), ((<span class="number">1</span>, <span class="number">0</span>), <span class="number">3</span>)]
         );
     }

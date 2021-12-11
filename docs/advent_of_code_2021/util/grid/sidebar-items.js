@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Grid","A representation of a 2D grid of u8s. Originally implemented for [`crate::day_9`], another grid was needed for [`crate::day_11`] and so common methods were extracted to this shared module"],["GridCoords","Temporary struct representing an iterator over a grid"]]});

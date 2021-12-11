@@ -238,6 +238,7 @@
 <span id="238">238</span>
 <span id="239">239</span>
 <span id="240">240</span>
+<span id="241">241</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 11 - _Dumbo Octopus_](https://adventofcode.com/2021/day/11)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today was again using a grid of digits. This time we had to manage cascading updates as one cell overflowing</span>
@@ -264,7 +265,8 @@
 <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::grid::Grid</span>;
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">inline</span>)]</span>
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::grid::Grid</span>;
 
 <span class="kw">impl</span> <span class="ident">Grid</span> {
     <span class="doccomment">/// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates</span>

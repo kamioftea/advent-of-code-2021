@@ -1,11 +1,14 @@
 //! This is my solution for [Advent of Code - Day 9 - _Smoke Basin_](https://adventofcode.com/2021/day/9)
 //!
+//! _**Note**: At the time of writing [`Grid`] was part of the Day 9 module. Parts that were reused for Day 11 have
+//! since been extracted into a utility module._
+//!
 //! Today's task was to find local minima (part one) of a grid of digits and the area within the watershed of those
 //! (part two). For this I built a type to represent a [`Grid`] and implemented a bunch of methods to build towards a
 //! solution. I've tried to lean more on the standard library and built in traits to accomplish some of this,
 //! specifically using `impl From<String> for Grid` for the initial parsing, and providing [`Grid::iter`] which returns
-//! a [`GridCoords`] which has an implementation for [`Iterator`] as a standard way to iterate all the cells in the
-//! grid.
+//! a [`crate::util::grid::GridCoords`] which has an implementation for [`Iterator`] as a standard way to iterate all
+//! the cells in the grid.
 //!
 //! I had to work at getting [`Grid::iter`] correct and my original code was implementing [`IntoIterator`] for Grid,
 //! and the iterator was contained the grid itself, which in turn was (because I was struggling with exactly where the
@@ -19,108 +22,22 @@
 //! the width of the grid to work out the correct offset in the list for a given x and y, implemented as [`Grid::get`].
 //! Working the other way, [`Grid::get_with_coords`] is used by the iterator to work out the 2D co-ordinates of its
 //! current position. [`Grid::get_low_points`] filters the iterator of all points in the grid to just the local minima,
-//! this defers to [`Grid::is_lowest`] which in turn uses [`Grid::get_surrounds`] to check the current value against its
-//! four neighbours. [`Grid::get_risk_level`] takes the result of [`Grid::get_low_points`] and reduces it to the
-//! puzzle solution for part one.
+//! this defers to [`Grid::is_lowest`] which in turn uses [`Grid::get_orthogonal_surrounds`] to check the current value
+//! against its four neighbours. [`Grid::get_risk_level`] takes the result of [`Grid::get_low_points`] and reduces it to
+//! the puzzle solution for part one.
 //!
-//! To solve part two, [`Grid::get_basin`] uses [`Grid::get_surrounds`], filtering to only larger numbers less than the
-//! watershed of 9 to recursively build a set of co-ordinates by walking uphill. [`Grid::get_largest_basin_sizes`] is
-//! a wrapper that calls [`Grid::get_basin`] for each low point, and the reduces the returned data into the puzzle
-//! solution.
+//! To solve part two, [`Grid::get_basin`] uses [`Grid::get_orthogonal_surrounds`], filtering to only larger numbers
+//! less than the watershed of 9 to recursively build a set of co-ordinates by walking uphill.
+//! [`Grid::get_largest_basin_sizes`] is a wrapper that calls [`Grid::get_basin`] for each low point, and the reduces
+//! the returned data into the puzzle solution.
 
 use itertools::Itertools;
 use std::collections::HashSet;
 use std::fs;
 
-/// A representation of a 2D grid of numerical heights. Today's solutions are implemented as methods for this type.
-#[derive(Debug, Eq, PartialEq)]
-pub struct Grid {
-    /// Store the numbers in a 1D list...
-    pub numbers: Vec<u8>,
-    /// ...and use the width to determine the 1D offset as a 2D co-ordinate
-    pub width: usize,
-}
-
-impl From<String> for Grid {
-    /// Turn the characters into digits and concatenate, caching the width
-    fn from(string: String) -> Self {
-        let mut width: usize = 0;
-
-        let numbers = string
-            .lines()
-            .flat_map(|line| {
-                width = line.len();
-                return line.chars().map(|c| {
-                    c.to_digit(10)
-                        .expect(format!("{} is not a digit", c).as_str()) as u8
-                });
-            })
-            .collect();
-
-        Grid { numbers, width }
-    }
-}
-
-/// Temporary struct representing an iterator over a grid
-pub struct GridCoords<'a> {
-    /// Reference to the grid being iterated
-    grid: &'a Grid,
-    /// The current position of the iterator
-    pos: usize,
-}
-
-impl<'a> Iterator for GridCoords<'a> {
-    type Item = ((usize, usize), u8);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let curr = self.grid.get_with_coords(self.pos);
-        self.pos = self.pos + 1;
-
-        curr
-    }
-}
+use crate::util::grid::Grid;
 
 impl Grid {
-    /// Helper to abstract iterating over the whole grid
-    pub fn iter(&self) -> GridCoords {
-        GridCoords { grid: self, pos: 0 }
-    }
-
-    /// Return the value at the given co-ordinates
-    pub fn get(&self, y: usize, x: usize) -> Option<u8> {
-        if x >= self.width {
-            return None;
-        }
-        self.numbers.get(x + y * self.width).map(|&t| t)
-    }
-
-    /// Used by [`GridCoords::next`] to turn the current iterator position into the x/y co-ordinates and the value in
-    /// that cell.
-    pub fn get_with_coords(&self, pos: usize) -> Option<((usize, usize), u8)> {
-        let x = pos % self.width;
-        let y = pos / self.width;
-
-        self.numbers.get(pos).map(|&val| ((y, x), val))
-    }
-
-    pub fn get_relative(
-        &self,
-        y: usize,
-        x: usize,
-        dy: isize,
-        dx: isize,
-    ) -> Option<((usize, usize), u8)> {
-        let y1 = (y as isize) + dy;
-        let x1 = (x as isize) + dx;
-
-        if y1 >= 0 && x1 >= 0 {
-            self.get(y1 as usize, x1 as usize)
-                .map(|val| ((y1 as usize, x1 as usize), val))
-        } else {
-            None
-        }
-    }
-
     /// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates
     /// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.
     fn get_orthogonal_surrounds(&self, y: usize, x: usize) -> Vec<((usize, usize), u8)> {

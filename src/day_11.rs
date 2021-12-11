@@ -1,35 +1,32 @@
-//! This is my solution for [Advent of Code - Day 11 - _Title_](https://adventofcode.com/2021/day/11)
+//! This is my solution for [Advent of Code - Day 11 - _Dumbo Octopus_](https://adventofcode.com/2021/day/11)
 //!
+//! Today was again using a grid of digits. This time we had to manage cascading updates as one cell overflowing
+//! beyond 9 caused neighbouring cells to increase, potentially triggering more cells. If you've ever played
+//! [Pandemic](https://boardgamegeek.com/boardgame/30549/pandemic), today's puzzle may give you flashbacks.
 //!
+//! The grid shared a lot of similarities with the grid in [`crate::day_9`], and so I reused that implementation
+//! adding extra methods to meet today's needs. Whilst writing the solution I just imported the Grid directly from
+//! [`crate::day_9`], but once submitted I did some cleanup refactoring and extracted it into its own module under
+//! [`crate::util`], leaving the puzzle specific methods in their own impl blocks in the relevant module. Having a
+//! comprehensive set of tests made this a pretty easy refactor.
+//!
+//! [`Grid::set`] was needed to allow incrementing the values in the cells as the octopuses powered up.
+//! [`Grid::get_all_surrounds`] was needed separate to [`Grid::get_orthogonal_surrounds`] as today's
+//! requirements considered diagonal cells adjacent. This caused some head scratching when I failed to notice this
+//! difference, but [`Grid::print`] let me visualise the grid and work out what was wrong.
+//!
+//! The bulk of today's solutions is handled by [`Grid::iterate_and_flash`] which handles a single cycle of
+//! incrementing the octopuses, and resolving any resulting flashes. [`Grid::count_flashes`] implements part one by
+//! repeatedly calling [`Grid::iterate_and_flash`] the required number of times, summing the resulting flash counts.
+//! [`Grid::run_until_sync`] also repeatedly calls [`Grid::iterate_and_flash`] until the count of flashes is equal to
+//! the number of cells in the grid, indicating all octopuses flashed in sync, and returns the iteration it has reached.
 
 use std::collections::HashSet;
 use std::fs;
 
-use crate::day_9::Grid;
-
-impl Clone for Grid {
-    fn clone(&self) -> Self {
-        Grid {
-            numbers: self.numbers.to_vec(),
-            width: self.width,
-        }
-    }
-}
+use crate::util::grid::Grid;
 
 impl Grid {
-    fn set(&mut self, y: usize, x: usize, val: u8) -> bool {
-        if x >= self.width {
-            return false;
-        }
-
-        let pos = y * self.width + x;
-        if pos < self.numbers.len() {
-            self.numbers[pos] = val;
-            return true;
-        }
-        return false;
-    }
-
     /// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates
     /// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.
     pub fn get_all_surrounds(&self, y: usize, x: usize) -> Vec<((usize, usize), u8)> {
@@ -48,6 +45,14 @@ impl Grid {
         .collect()
     }
 
+    /// This is the core logic to implement a single pass of the octopuses powering up required for both parts. It
+    /// first iterates through all the cells incrementing them by one. Any that started at 9 are added to a queue of
+    /// cells that have triggered a flash. We then take cells off the to flash list, adding them to a set of all
+    /// co-ordinates that have flashed this iteration (so that we can 0 them later, and also ensure no cell flashes
+    /// twice). If the cell was new to the flashes set, it also increments its neighbours, adding any that exceed 9
+    /// to the trigger queue. Once the queue has been exhausted, we iterate through the resulting set of co-ordinates
+    /// that flashed this iteration, set them to 0 and return the size of the set, as this is the metric needed for
+    /// both parts' solutions.
     fn iterate_and_flash(&mut self) -> usize {
         let mut flashes: HashSet<(usize, usize)> = HashSet::new();
         let mut to_flash: Vec<(usize, usize)> = Vec::new();
@@ -83,23 +88,7 @@ impl Grid {
         flashes.len()
     }
 
-    fn _print(&self) {
-        let mut line = 0;
-
-        for ((y, _), v) in self.iter() {
-            if y != line {
-                line = y;
-                print!("\n")
-            }
-            if v > 9 {
-                print!("#")
-            } else {
-                print!("{}", v)
-            }
-        }
-        print!("\n")
-    }
-
+    /// Solution to part one. Iterate the grid <cycles> times, summing the flashes this causes.
     fn count_flashes(&mut self, cycles: usize) -> usize {
         let mut total: usize = 0;
 
@@ -110,6 +99,8 @@ impl Grid {
         total
     }
 
+    /// Solution to part two. Iterate the grid until the set of flashes is the same size as the grid, i.e. all cells
+    /// triggered a flash. Return the number of iterations required to reach that point.
     fn run_until_sync(&mut self) -> usize {
         let target = self.numbers.len();
         let mut iteration: usize = 0;
@@ -142,7 +133,7 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use crate::day_9::Grid;
+    use crate::util::grid::Grid;
     use std::collections::HashSet;
 
     #[test]

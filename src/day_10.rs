@@ -1,6 +1,30 @@
-//! This is my solution for [Advent of Code - Day 10 - _Title_](https://adventofcode.com/2021/day/10)
+//! This is my solution for [Advent of Code - Day 10 - _Syntax Scoring_](https://adventofcode.com/2021/day/10)
 //!
+//! Today was about matching different types of braces, firstly (part one) to check that the braces matched, and
+//! secondly (part two) where closing braces had been missed off the end of the string to close them. Implementing
+//! the state as a stack of characters seemed sensible. An opening brace triggers putting the expected closing brace
+//! on the stack, a closing brace pops the expected brace off the stack and returns an error if it doesn't match.
+//! Anything left on the stack at the end is returned as the required characters to 'autocomplete' the rest of the
+//! line. I originally implemented this as putting the opening brace on the stack, but that required doing the mapping
+//! from opening to closing brace character both when checking for a match and when returning outstanding characters.
+//! It was cleaner to do the mapping upfront.
 //!
+//! [`check_line`] do most of the work for both parts. It was a good opportunity to use Rust's [`Result`] type, and I
+//! implemented a custom enum [`ParseError`] to capture the errors due to syntax, vs the errors I needed to include
+//! to satisfy edge cases that weren't in the puzzle input - namely characters that weren't any of the 8 braces, and
+//! the case where there is one or more closing braces encountered when the stack is empty. [`sum_errors`] wraps
+//! [`check_line`] for part one, filtering out ny lines that don't return a [`ParseError::MISMATCH`], mapping those
+//! to the correct score, and summing the results. [`score_line_autocomplete`] takes the characters returned from a
+//! successfully parsed line and folds them into the expected score. [`median_autocomplete_score`] handles the
+//! plumbing of getting the list of successful [`check_line`] results, mapping them to the autocomplete score and
+//! returning the median score required for part two's puzzle result.
+//!
+//! One final piece of trivia, I looked into using the characters' unicode points to avoid using a hash map, but they
+//! were not consistent. `(` and `)` are consecutive, but the others are all separated by one character.
+//! ```
+//! println!("{}", "()[]{}<>".chars().map(|c| c as usize).join(", "));
+//! // 40, 41, 91, 93, 123, 125, 60, 62
+//! ```
 
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -22,70 +46,68 @@ pub fn run() {
     println!("Autocomplete score: {}", autocomplete_score)
 }
 
+/// Used to indicate an error when parsing strings of braces
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 enum ParseError {
+    /// A closing brace was encountered that doesn't match the expected character from the corresponding opening brace
     MISMATCH { expected: char, actual: char },
+    /// Any other unexpected character i.e. not part of one of the four brace pairs, or a closing brace without a
+    /// corresponding opening brace.
     UNEXPECTED(char),
 }
 
+/// Find all the lines in the input that return a mismatch error and sum a score based on the character that was 
+/// incorrect.
+#[rustfmt::skip] // Keep match readable
 fn sum_errors(input: &String) -> usize {
     input
         .lines()
         .map(check_line)
         .map(|res| match res {
-            Err(MISMATCH {
-                expected: _,
-                actual: ')',
-            }) => 3,
-            Err(MISMATCH {
-                expected: _,
-                actual: ']',
-            }) => 57,
-            Err(MISMATCH {
-                expected: _,
-                actual: '}',
-            }) => 1197,
-            Err(MISMATCH {
-                expected: _,
-                actual: '>',
-            }) => 25137,
+            Err(MISMATCH { expected: _, actual: ')' }) => 3,
+            Err(MISMATCH { expected: _, actual: ']' }) => 57,
+            Err(MISMATCH { expected: _, actual: '}' }) => 1197,
+            Err(MISMATCH { expected: _, actual: '>' }) => 25137,
             _ => 0usize,
         })
         .sum()
 }
 
+/// Given a string, either return the list of closing braces needed to completely match the opening braces in order,
+/// or return a [`ParseError`] if a closing brace that doesn't match the expected value at any point in the string.
 fn check_line(line: &str) -> Result<Vec<char>, ParseError> {
+    // Stack of the currently expected closing braces
     let mut stack: Vec<char> = Vec::new();
 
     let braces = HashMap::from([('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]);
 
     for chr in line.chars() {
         match chr {
-            '(' | '[' | '{' | '<' => stack.push(chr),
+            // It's easier to map the opening => closing brace here as it keeps it in one place
+            '(' | '[' | '{' | '<' => stack.push(*braces.get(&chr).expect("Unreachable")),
             ')' | ']' | '}' | '>' => {
-                if let Some(prev) = stack.pop() {
-                    let &expected = braces.get(&prev).expect("Unexpected character on stack");
-
+                if let Some(expected) = stack.pop() {
                     if chr != expected {
                         return Err(MISMATCH {
                             expected,
                             actual: chr,
                         });
                     }
+                } else {
+                    return Err(UNEXPECTED(chr));
                 }
             }
             _ => return Err(UNEXPECTED(chr)),
         }
     }
 
-    return Ok(stack
-        .iter()
-        .flat_map(|c| braces.get(c))
-        .map(|&c| c)
-        .rev() // FIFO
-        .collect());
+    // We need t reveser the stack to keep the First In First Out ordering
+    let autocomplete = stack.iter().map(|&c| c).rev().collect();
+
+    return Ok(autocomplete);
 }
 
+/// Given the list of braces needed to complete a string, fold them into the autocomplete score
 fn score_line_autocomplete(line: Vec<char>) -> usize {
     line.iter()
         .flat_map(|c| match c {
@@ -98,6 +120,8 @@ fn score_line_autocomplete(line: Vec<char>) -> usize {
         .fold(0, |acc, score| acc * 5 + score)
 }
 
+/// Find all the lines in the input that are valid, work out the autocomplete score for each, and return the median
+/// score.
 fn median_autocomplete_score(input: &String) -> usize {
     let scores: Vec<usize> = input
         .lines()
@@ -120,6 +144,7 @@ mod tests {
     use crate::day_10::{
         check_line, median_autocomplete_score, score_line_autocomplete, sum_errors,
     };
+    use itertools::Itertools;
 
     #[test]
     fn can_check_valid_line() {

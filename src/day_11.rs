@@ -24,7 +24,8 @@
 use std::collections::HashSet;
 use std::fs;
 
-use crate::util::grid::Grid;
+#[doc(inline)]
+pub use crate::util::grid::Grid;
 
 impl Grid {
     /// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates

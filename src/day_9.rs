@@ -33,12 +33,12 @@ use std::collections::HashSet;
 use std::fs;
 
 /// A representation of a 2D grid of numerical heights. Today's solutions are implemented as methods for this type.
-#[derive(Debug)]
-struct Grid {
+#[derive(Debug, Eq, PartialEq)]
+pub struct Grid {
     /// Store the numbers in a 1D list...
-    numbers: Vec<u8>,
+    pub numbers: Vec<u8>,
     /// ...and use the width to determine the 1D offset as a 2D co-ordinate
-    width: usize,
+    pub width: usize,
 }
 
 impl From<String> for Grid {
@@ -62,7 +62,7 @@ impl From<String> for Grid {
 }
 
 /// Temporary struct representing an iterator over a grid
-struct GridCoords<'a> {
+pub struct GridCoords<'a> {
     /// Reference to the grid being iterated
     grid: &'a Grid,
     /// The current position of the iterator
@@ -82,12 +82,12 @@ impl<'a> Iterator for GridCoords<'a> {
 
 impl Grid {
     /// Helper to abstract iterating over the whole grid
-    fn iter(&self) -> GridCoords {
+    pub fn iter(&self) -> GridCoords {
         GridCoords { grid: self, pos: 0 }
     }
 
     /// Return the value at the given co-ordinates
-    fn get(&self, y: usize, x: usize) -> Option<u8> {
+    pub fn get(&self, y: usize, x: usize) -> Option<u8> {
         if x >= self.width {
             return None;
         }
@@ -96,29 +96,37 @@ impl Grid {
 
     /// Used by [`GridCoords::next`] to turn the current iterator position into the x/y co-ordinates and the value in
     /// that cell.
-    fn get_with_coords(&self, pos: usize) -> Option<((usize, usize), u8)> {
+    pub fn get_with_coords(&self, pos: usize) -> Option<((usize, usize), u8)> {
         let x = pos % self.width;
         let y = pos / self.width;
 
         self.numbers.get(pos).map(|&val| ((y, x), val))
     }
 
+    pub fn get_relative(
+        &self,
+        y: usize,
+        x: usize,
+        dy: isize,
+        dx: isize,
+    ) -> Option<((usize, usize), u8)> {
+        let y1 = (y as isize) + dy;
+        let x1 = (x as isize) + dx;
+
+        if y1 >= 0 && x1 >= 0 {
+            self.get(y1 as usize, x1 as usize)
+                .map(|val| ((y1 as usize, x1 as usize), val))
+        } else {
+            None
+        }
+    }
+
     /// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates
     /// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.
-    fn get_surrounds(&self, y: usize, x: usize) -> Vec<((usize, usize), u8)> {
+    fn get_orthogonal_surrounds(&self, y: usize, x: usize) -> Vec<((usize, usize), u8)> {
         [(-1, 0), (0, 1), (1, 0), (0, -1)] // N E S W
             .iter()
-            .flat_map(|(dy, dx)| {
-                let y1 = (y as isize) + dy;
-                let x1 = (x as isize) + dx;
-
-                if y1 >= 0 && x1 >= 0 {
-                    self.get(y1 as usize, x1 as usize)
-                        .map(|val| ((y1 as usize, x1 as usize), val))
-                } else {
-                    None
-                }
-            })
+            .flat_map(|&(dy, dx)| self.get_relative(y, x, dy, dx))
             .collect()
     }
 
@@ -126,7 +134,7 @@ impl Grid {
     fn is_lowest(&self, y: usize, x: usize) -> bool {
         self.get(y, x)
             .map(|val| {
-                self.get_surrounds(y, x)
+                self.get_orthogonal_surrounds(y, x)
                     .iter()
                     .all(|&(_, adjacent)| val < adjacent)
             })
@@ -155,7 +163,7 @@ impl Grid {
         let mut basin = HashSet::new();
         if let Some(height) = self.get(y, x) {
             basin.insert((y, x));
-            self.get_surrounds(y, x)
+            self.get_orthogonal_surrounds(y, x)
                 .iter()
                 .filter(|(_, h)| *h > height && *h < 9)
                 .flat_map(|((y1, x1), _)| self.get_basin(*y1, *x1))
@@ -240,13 +248,16 @@ mod tests {
     fn can_get_surrounds() {
         let grid = get_sample_grid();
 
-        assert_eq!(grid.get_surrounds(0, 0), vec![((0, 1), 1), ((1, 0), 3)]);
         assert_eq!(
-            grid.get_surrounds(0, 1),
+            grid.get_orthogonal_surrounds(0, 0),
+            vec![((0, 1), 1), ((1, 0), 3)]
+        );
+        assert_eq!(
+            grid.get_orthogonal_surrounds(0, 1),
             vec![((0, 2), 9), ((1, 1), 9), ((0, 0), 2)]
         );
         assert_eq!(
-            grid.get_surrounds(1, 1),
+            grid.get_orthogonal_surrounds(1, 1),
             vec![((0, 1), 1), ((1, 2), 8), ((2, 1), 8), ((1, 0), 3)]
         );
     }

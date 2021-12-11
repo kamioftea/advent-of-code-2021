@@ -133,9 +133,12 @@ fn median_autocomplete_score(input: &String) -> usize {
     return *scores
         .iter()
         .sorted()
+        // len() / 2 is always the floor, so skip that many ...
         .skip(mid)
+        // And the midpoint will then be the next one
         .next()
-        .expect("Vec is long enough by def");
+        // Unless the input is empty this will always be set
+        .unwrap_or(&0usize);
 }
 
 #[cfg(test)]
@@ -144,7 +147,6 @@ mod tests {
     use crate::day_10::{
         check_line, median_autocomplete_score, score_line_autocomplete, sum_errors,
     };
-    use itertools::Itertools;
 
     #[test]
     fn can_check_valid_line() {

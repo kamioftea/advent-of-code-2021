@@ -115,20 +115,63 @@ impl Grid {
 
     /// Dump the grid to stdout - useful for visualising the grid when debugging
     #[allow(dead_code)]
-    pub fn print(&self) {
-        let mut line = 0;
+    pub fn print(&self) -> String {
+        let (_, out) = self
+            .iter()
+            .fold((0usize, "".to_string()), |(prev_y, out), ((y, _), v)| {
+                (
+                    y,
+                    format!(
+                        "{}{}{}",
+                        out,
+                        if y != prev_y { "\n" } else { "" },
+                        if v <= 9 {
+                            v.to_string()
+                        } else {
+                            "#".to_string()
+                        },
+                    ),
+                )
+            });
 
-        for ((y, _), v) in self.iter() {
-            if y != line {
-                line = y;
-                print!("\n")
-            }
-            if v > 9 {
-                print!("#")
-            } else {
-                print!("{}", v)
-            }
-        }
-        print!("\n")
+        out.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::day_9::Grid;
+
+    fn sample_input() -> String {
+        "12345\n\
+        23456\n\
+        34567\n\
+        45678\n\
+        56789"
+            .to_string()
+    }
+
+    #[test]
+    fn can_print() {
+        let input = sample_input();
+
+        let mut grid = Grid::from(input.clone());
+
+        assert_eq!(grid.print(), input);
+
+        grid.set(4, 4, 10);
+
+        assert_eq!(grid.print(), input.replace("9", "#"));
+    }
+
+    #[test]
+    fn set_ignores_out_of_bounds() {
+        let mut grid = Grid::from(sample_input());
+
+        assert_eq!(grid.set(5, 0, 9), false);
+        assert_eq!(grid.set(0, 5, 9), false);
+        assert_eq!(grid.set(5, 5, 9), false);
+        // unchanged
+        assert_eq!(grid.print(), sample_input());
     }
 }

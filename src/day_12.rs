@@ -63,9 +63,12 @@ impl From<&str> for CaveType {
     }
 }
 
+/// Represents a node (cave) in the graph (cave system)
 #[derive(Eq, PartialEq, Debug)]
 struct Cave {
+    /// Determines how many times this cave can be visited in a path
     cave_type: CaveType,
+    /// The indices of the nodes linked to this one by an edge
     links: Vec<usize>,
 }
 
@@ -79,10 +82,14 @@ impl From<&str> for Cave {
     }
 }
 
+/// Represents a path from the start to the node at [`position`].
 #[derive(Eq, PartialEq, Debug)]
 struct Path {
+    /// bitmap of visited nodes (13 puzzle input nodes - so works on 16+ bit architectures)
     visited: usize,
+    /// current node index
     position: usize,
+    /// flag to track if it has used its one allowed small cave revisit
     can_revisit: bool,
 }
 
@@ -118,7 +125,11 @@ pub fn run() {
     let caves = parse_input(&contents);
 
     let paths = build_paths(&caves, false);
-    println!("There are {} paths through the caves.", paths.len());
+    println!(
+        "There are {} paths through the {} caves.",
+        paths.len(),
+        caves.len()
+    );
 
     let paths_with_revisit = build_paths(&caves, true);
     println!(

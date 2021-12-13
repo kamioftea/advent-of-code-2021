@@ -1,11 +1,22 @@
-//! This is my solution for [Advent of Code - Day 13 - _Title_](https://adventofcode.com/2021/day/13)
+//! This is my solution for [Advent of Code - Day 13 - _Transparent Origami_](https://adventofcode.com/2021/day/13)
 //!
+//! The hardest part of today's solution was parsing the input. I opted for a `HashSet` of
+//! co-ordinates rather than representing the full grid as the dots were very sparse. I also created
+//! a simple enum [`Axis`] to track the axis of each fold. [`parse_input`] is mostly checks to
+//! confirm each line confirms to spec, as Rust is very explicit about making you handle everything.
 //!
+//! [`apply_fold`] iterates through the dots adding them to a new folded set. If they are left of /
+//! above the relevant axis, they are inserted as is, otherwise the new position is calculated and
+//! inserted. The `len()` of the resulting set when applying the first fold gives the answer to part
+//! one. Part two requires two extra functions [`apply_folds`] uses [`apply_fold`] with each fold in
+//! turn, and [`display_dots`] takes the resulting set and renders it as a grid so that the code can
+//! be read by a human.
 
 use crate::day_13::Axis::{X, Y};
 use std::collections::HashSet;
 use std::fs;
 
+/// Controls the axis each fold will be applied using
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 enum Axis {
     X,
@@ -37,17 +48,23 @@ pub fn run() {
     println!("The folded paper shows:\n{}", display_dots(&folded));
 }
 
+/// The puzzle input is in two sections separated by a blank line. Section one is the initial set of
+/// dot co-ordinates, in the format `x,y`. Section two is a list of folds in the format
+/// `fold along <axis>=<co-ordinate>`.
 fn parse_input(input: String) -> (HashSet<(usize, usize)>, Vec<(Axis, usize)>) {
     // split on the blank line
     let (dots, folds) = input
         .split_once("\n\n")
         .expect("Invalid input - no section separator");
     (
+        // for each co-ordinate line
         dots.lines()
             .map(|line| {
+                // split at the comma
                 let (x, y) = line
                     .split_once(",")
                     .expect(format!("Invalid dot {}", line).as_str());
+                // and parse both as numbers
                 (
                     x.parse::<usize>()
                         .expect(format!("Invalid dot x {}", line).as_str()),
@@ -56,13 +73,17 @@ fn parse_input(input: String) -> (HashSet<(usize, usize)>, Vec<(Axis, usize)>) {
                 )
             })
             .collect(),
+        // for each fold
         folds
             .lines()
             .map(|line| {
+                // strip the superfluous prefix
                 let definition = line.replace("fold along ", "");
+                // split at the equals
                 let (axis, pos) = definition
                     .split_once("=")
                     .expect(format!("Invalid fold {}", line).as_str());
+                // parse as an [`Axis`] and a number
                 (
                     Axis::from(axis),
                     pos.parse::<usize>()
@@ -73,17 +94,22 @@ fn parse_input(input: String) -> (HashSet<(usize, usize)>, Vec<(Axis, usize)>) {
     )
 }
 
+/// Return a new set where the first has been folded along the given axis
 fn apply_fold(dots: &HashSet<(usize, usize)>, fold: (Axis, usize)) -> HashSet<(usize, usize)> {
     let (axis, position) = fold;
     dots.iter()
         .map(|&(x, y)| match (axis, (x, y)) {
+            // Folding by y and dot is right of the fold
             (X, (x1, y1)) if x1 > position => (2 * position - x1, y1),
+            // Folding by y and dot is below the fold
             (Y, (x1, y1)) if y1 > position => (x1, 2 * position - y1),
+            // otherwise leave as is
             (_, coords) => coords,
         })
         .collect()
 }
 
+/// Fold the list of folds into the starting set of dots #tooManyFolds
 fn apply_folds(
     dots: &HashSet<(usize, usize)>,
     folds: &Vec<(Axis, usize)>,
@@ -93,14 +119,52 @@ fn apply_folds(
         .fold(dots.clone(), |acc, &fold| apply_fold(&acc, fold))
 }
 
+/// This calculates the maximum x and y in the set to determine the grid bounds, then loops through
+/// each row and column outputting a `▮` or ` ` based on if the current coordinate is in the set.
+///
+/// # Example from puzzle specification
+/// ```rust
+/// let dots = HashSet::from([
+///     (6usize, 10usize),
+///     (0usize, 14usize),
+///     (9usize, 10usize),
+///     (0usize, 3usize),
+///     (10usize, 4usize),
+///     (4usize, 11usize),
+///     (6usize, 0usize),
+///     (6usize, 12usize),
+///     (4usize, 1usize),
+///     (0usize, 13usize),
+///     (10usize, 12usize),
+///     (3usize, 4usize),
+///     (3usize, 0usize),
+///     (8usize, 4usize),
+///     (1usize, 10usize),
+///     (2usize, 14usize),
+///     (8usize, 10usize),
+///     (9usize, 0usize),
+/// ]);
+///
+/// let folds = vec![(Y, 7usize), (X, 5usize)];
+///
+/// let expected = "▮▮▮▮▮\n\
+///                 ▮   ▮\n\
+///                 ▮   ▮\n\
+///                 ▮   ▮\n\
+///                 ▮▮▮▮▮\n\
+///                 ".to_string();
+///
+/// assert_eq!(display_dots(&apply_folds(&dots, &folds)), expected);
+/// ```
 fn display_dots(dots: &HashSet<(usize, usize)>) -> String {
+    // get bounds
     let max_x = dots.iter().map(|&(x, _)| x).max().expect("No dots");
     let max_y = dots.iter().map(|&(_, y)| y).max().expect("No dots");
 
     let mut out = "".to_string();
     for y in 0..=max_y {
         for x in 0..=max_x {
-            out = format!("{}{}", out, if dots.contains(&(x, y)) { "#" } else { " " })
+            out = format!("{}{}", out, if dots.contains(&(x, y)) { "▮" } else { " " })
         }
         out = format!("{}{}", out, "\n")
     }
@@ -178,12 +242,12 @@ fold along x=5"
     #[test]
     fn can_display_result() {
         let (dots, folds) = sample_puzzle();
-        let expected = "#####
-#   #
-#   #
-#   #
-#####
-"
+        let expected = "▮▮▮▮▮\n\
+                               ▮   ▮\n\
+                               ▮   ▮\n\
+                               ▮   ▮\n\
+                               ▮▮▮▮▮\n\
+                               "
         .to_string();
         assert_eq!(display_dots(&apply_folds(&dots, &folds)), expected);
     }

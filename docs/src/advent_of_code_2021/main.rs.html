@@ -55,9 +55,12 @@
 <span id="55">55</span>
 <span id="56">56</span>
 <span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">day_1</span>;
 <span class="kw">mod</span> <span class="ident">day_10</span>;
 <span class="kw">mod</span> <span class="ident">day_11</span>;
+<span class="kw">mod</span> <span class="ident">day_12</span>;
 <span class="kw">mod</span> <span class="ident">day_2</span>;
 <span class="kw">mod</span> <span class="ident">day_3</span>;
 <span class="kw">mod</span> <span class="ident">day_4</span>;
@@ -73,10 +76,10 @@
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">core</span>;
 
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">text_io</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">itertools</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">regex</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">text_io</span>;
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="macro">print!</span>(<span class="string">&quot;Which day? (0 to run all): &quot;</span>);
@@ -95,6 +98,7 @@
         <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_9::run</span>()),
         <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_10::run</span>()),
         <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_11::run</span>()),
+        <span class="ident">Box::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">day_12::run</span>()),
     ];
 
     <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">Instant::now</span>();

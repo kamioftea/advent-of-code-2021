@@ -303,6 +303,17 @@
 <span id="303">303</span>
 <span id="304">304</span>
 <span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 12 - _Passage Pathing_](https://adventofcode.com/2021/day/12)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today was graph traversing. The puzzle was to find all the paths to traverse a set of caves, some of which could</span>
@@ -368,9 +379,12 @@
     }
 }
 
+<span class="doccomment">/// Represents a node (cave) in the graph (cave system)</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">Cave</span> {
+    <span class="doccomment">/// Determines how many times this cave can be visited in a path</span>
     <span class="ident">cave_type</span>: <span class="ident">CaveType</span>,
+    <span class="doccomment">/// The indices of the nodes linked to this one by an edge</span>
     <span class="ident">links</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
 }
 
@@ -384,10 +398,14 @@
     }
 }
 
+<span class="doccomment">/// Represents a path from the start to the node at [`Path::position`].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">Path</span> {
+    <span class="doccomment">/// bitmap of visited nodes (13 puzzle input nodes - so works on 16+ bit architectures)</span>
     <span class="ident">visited</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// current node index</span>
     <span class="ident">position</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// flag to track if it has used its one allowed small cave revisit</span>
     <span class="ident">can_revisit</span>: <span class="ident">bool</span>,
 }
 
@@ -423,7 +441,11 @@
     <span class="kw">let</span> <span class="ident">caves</span> <span class="op">=</span> <span class="ident">parse_input</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>);
 
     <span class="kw">let</span> <span class="ident">paths</span> <span class="op">=</span> <span class="ident">build_paths</span>(<span class="kw-2">&amp;</span><span class="ident">caves</span>, <span class="bool-val">false</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;There are {} paths through the caves.&quot;</span>, <span class="ident">paths</span>.<span class="ident">len</span>());
+    <span class="macro">println!</span>(
+        <span class="string">&quot;There are {} paths through the {} caves.&quot;</span>,
+        <span class="ident">paths</span>.<span class="ident">len</span>(),
+        <span class="ident">caves</span>.<span class="ident">len</span>()
+    );
 
     <span class="kw">let</span> <span class="ident">paths_with_revisit</span> <span class="op">=</span> <span class="ident">build_paths</span>(<span class="kw-2">&amp;</span><span class="ident">caves</span>, <span class="bool-val">true</span>);
     <span class="macro">println!</span>(

@@ -5,9 +5,9 @@ since been extracted into a utility module.</em></p>
 (part two). For this I built a type to represent a <a href="../util/grid/struct.Grid.html" title="Grid"><code>Grid</code></a> and implemented a bunch of methods to build towards a
 solution. I’ve tried to lean more on the standard library and built in traits to accomplish some of this,
 specifically using <code>impl From&lt;String&gt; for Grid</code> for the initial parsing, and providing <a href="../util/grid/struct.Grid.html#method.iter" title="Grid::iter"><code>Grid::iter</code></a> which returns
-a <a href="../util/grid/struct.GridCoords.html" title="crate::util::grid::GridCoords"><code>crate::util::grid::GridCoords</code></a> which has an implementation for <a href="https://doc.rust-lang.org/1.56.1/core/iter/traits/iterator/trait.Iterator.html" title="Iterator"><code>Iterator</code></a> as a standard way to iterate all
+a <a href="../util/grid/struct.GridCoords.html" title="crate::util::grid::GridCoords"><code>crate::util::grid::GridCoords</code></a> which has an implementation for <a href="https://doc.rust-lang.org/1.57.0/core/iter/traits/iterator/trait.Iterator.html" title="Iterator"><code>Iterator</code></a> as a standard way to iterate all
 the cells in the grid.</p>
-<p>I had to work at getting <a href="../util/grid/struct.Grid.html#method.iter" title="Grid::iter"><code>Grid::iter</code></a> correct and my original code was implementing <a href="https://doc.rust-lang.org/1.56.1/core/iter/traits/collect/trait.IntoIterator.html" title="IntoIterator"><code>IntoIterator</code></a> for Grid,
+<p>I had to work at getting <a href="../util/grid/struct.Grid.html#method.iter" title="Grid::iter"><code>Grid::iter</code></a> correct and my original code was implementing <a href="https://doc.rust-lang.org/1.57.0/core/iter/traits/collect/trait.IntoIterator.html" title="IntoIterator"><code>IntoIterator</code></a> for Grid,
 and the iterator was contained the grid itself, which in turn was (because I was struggling with exactly where the
 lifetime constraints needed to go to satisfy the compiler. This meant I needed to clone the whole grid each time
 I wanted to iterate over it as the iterator took ownership of the grid it was created with. I eventually found an
@@ -26,8 +26,8 @@ less than the watershed of 9 to recursively build a set of co-ordinates by walki
 <a href="../util/grid/struct.Grid.html#method.get_largest_basin_sizes" title="Grid::get_largest_basin_sizes"><code>Grid::get_largest_basin_sizes</code></a> is a wrapper that calls <a href="../util/grid/struct.Grid.html#method.get_basin" title="Grid::get_basin"><code>Grid::get_basin</code></a> for each low point, and the reduces
 the returned data into the puzzle solution.</p>
 </div></details><h2 id="reexports" class="section-header"><a href="#reexports">Re-exports</a></h2>
-<div class="item-table"><div class="item-left import-item"><code>pub use crate::util::grid::<a class="struct" href="../util/grid/struct.Grid.html" title="struct advent_of_code_2021::util::grid::Grid">Grid</a>;</code></div><div class="item-right docblock-short"></div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_9::run fn">run</a></div><div class="item-right docblock-short"><p>The entry point for running the solutions with the ‘real’ puzzle input.</p>
-</div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+<div class="item-table"><div class="item-row"><div class="item-left import-item"><code>pub use crate::util::grid::<a class="struct" href="../util/grid/struct.Grid.html" title="struct advent_of_code_2021::util::grid::Grid">Grid</a>;</code></div><div class="item-right docblock-short"></div></div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_9::run fn">run</a></div><div class="item-right docblock-short"><p>The entry point for running the solutions with the ‘real’ puzzle input.</p>
+</div></div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script>
 </body></html>

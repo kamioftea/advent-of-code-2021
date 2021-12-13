@@ -13,10 +13,10 @@ no longer need <a href="fn.count_bit.html" title="count_bit"><code>count_bit</co
 the bits at the current position were majority set or not, then filtered the current subset
 based on that. The current partition based approach is easier to understand what is going on.</p>
 </div></details><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="fn" href="fn.analyse_diagnostics.html" title="advent_of_code_2021::day_3::analyse_diagnostics fn">analyse_diagnostics</a></div><div class="item-right docblock-short"><p>This solves part one, returning the pair of required values. It calculates the gamma value by
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.analyse_diagnostics.html" title="advent_of_code_2021::day_3::analyse_diagnostics fn">analyse_diagnostics</a></div><div class="item-right docblock-short"><p>This solves part one, returning the pair of required values. It calculates the gamma value by
 iterating through each bit in the input strings and comparing the result of <a href="fn.count_bit.html" title="count_bit"><code>count_bit</code></a> to the
 size of the data. The epsilon value is the bitwise inverse of that.</p>
-</div><div class="item-left module-item"><a class="fn" href="fn.analyse_life_support.html" title="advent_of_code_2021::day_3::analyse_life_support fn">analyse_life_support</a></div><div class="item-right docblock-short"><p>This solves part two, returning the pair of required values. The solution calls for successively
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.analyse_life_support.html" title="advent_of_code_2021::day_3::analyse_life_support fn">analyse_life_support</a></div><div class="item-right docblock-short"><p>This solves part two, returning the pair of required values. The solution calls for successively
 filtering the input array until only one value array, which works well as a recursive function.
 The base case for this is when the provided array is of length 1, and returns the remaining
 value if it is present. Otherwise split the input based on whether the bit we care about is set,
@@ -24,12 +24,12 @@ then recurse the largest/smallest half based on which value is being calculated,
 position advanced by 1. Unlike part one, the recursion means there isn’t a neat trick to invert
 the first result to product the second, so the recursive function is called twice, with a
 flag used to switch the mode.</p>
-</div><div class="item-left module-item"><a class="fn" href="fn.count_bit.html" title="advent_of_code_2021::day_3::count_bit fn">count_bit</a></div><div class="item-right docblock-short"><p>Return the number of values in the data where all the bits set in the bitmask are also set in
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.count_bit.html" title="advent_of_code_2021::day_3::count_bit fn">count_bit</a></div><div class="item-right docblock-short"><p>Return the number of values in the data where all the bits set in the bitmask are also set in
 the value. Utility function used by <a href="fn.analyse_diagnostics.html" title="analyse_diagnostics"><code>analyse_diagnostics</code></a>. For this puzzle, only one bit is
 set in the mask at a time.</p>
-</div><div class="item-left module-item"><a class="fn" href="fn.parse_input.html" title="advent_of_code_2021::day_3::parse_input fn">parse_input</a></div><div class="item-right docblock-short"><p>Returns a pair of the parsed data and the length of the bit strings. Delegates to the built in
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.parse_input.html" title="advent_of_code_2021::day_3::parse_input fn">parse_input</a></div><div class="item-right docblock-short"><p>Returns a pair of the parsed data and the length of the bit strings. Delegates to the built in
 [<code>usifix ze::from_str_radix</code>]. The length is needed for some of the bitwise tricks.</p>
-</div><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_3::run fn">run</a></div><div class="item-right docblock-short"><p>The entry point for running the solutions with the ‘real’ puzzle input.</p>
-</div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_3::run fn">run</a></div><div class="item-right docblock-short"><p>The entry point for running the solutions with the ‘real’ puzzle input.</p>
+</div></div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script>
 </body></html>

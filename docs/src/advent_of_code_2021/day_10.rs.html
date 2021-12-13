@@ -326,23 +326,23 @@
 <span class="doccomment">/// Find all the lines in the input that return a mismatch error and sum a score based on the character that was </span>
 <span class="doccomment">/// incorrect.</span>
 <span class="attribute">#[<span class="ident">rustfmt::skip</span>]</span> <span class="comment">// Keep match readable</span>
-<span class="kw">fn</span> <span class="ident">sum_errors</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+<span class="kw">fn</span> <span class="ident">sum_errors</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="ident">usize</span> {
     <span class="ident">input</span>
         .<span class="ident">lines</span>()
         .<span class="ident">map</span>(<span class="ident">check_line</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">res</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">res</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;)&#39;</span> }) <span class="op">=</span><span class="op">&gt;</span> <span class="number">3</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;]&#39;</span> }) <span class="op">=</span><span class="op">&gt;</span> <span class="number">57</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;}&#39;</span> }) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1197</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;&gt;&#39;</span> }) <span class="op">=</span><span class="op">&gt;</span> <span class="number">25137</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0usize</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;)&#39;</span> }) =&gt; <span class="number">3</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;]&#39;</span> }) =&gt; <span class="number">57</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;}&#39;</span> }) =&gt; <span class="number">1197</span>,
+            <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> { <span class="ident">expected</span>: <span class="kw">_</span>, <span class="ident">actual</span>: <span class="string">&#39;&gt;&#39;</span> }) =&gt; <span class="number">25137</span>,
+            <span class="kw">_</span> =&gt; <span class="number">0usize</span>,
         })
         .<span class="ident">sum</span>()
 }
 
 <span class="doccomment">/// Given a string, either return the list of closing braces needed to completely match the opening braces in order,</span>
 <span class="doccomment">/// or return a [`ParseError`] if a closing brace that doesn&#39;t match the expected value at any point in the string.</span>
-<span class="kw">fn</span> <span class="ident">check_line</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">check_line</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
     <span class="comment">// Stack of the currently expected closing braces</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
@@ -351,8 +351,8 @@
     <span class="kw">for</span> <span class="ident">chr</span> <span class="kw">in</span> <span class="ident">line</span>.<span class="ident">chars</span>() {
         <span class="kw">match</span> <span class="ident">chr</span> {
             <span class="comment">// It&#39;s easier to map the opening =&gt; closing brace here as it keeps it in one place</span>
-            <span class="string">&#39;(&#39;</span> <span class="op">|</span> <span class="string">&#39;[&#39;</span> <span class="op">|</span> <span class="string">&#39;{&#39;</span> <span class="op">|</span> <span class="string">&#39;&lt;&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">stack</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">braces</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">chr</span>).<span class="ident">expect</span>(<span class="string">&quot;Unreachable&quot;</span>)),
-            <span class="string">&#39;)&#39;</span> <span class="op">|</span> <span class="string">&#39;]&#39;</span> <span class="op">|</span> <span class="string">&#39;}&#39;</span> <span class="op">|</span> <span class="string">&#39;&gt;&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="string">&#39;(&#39;</span> <span class="op">|</span> <span class="string">&#39;[&#39;</span> <span class="op">|</span> <span class="string">&#39;{&#39;</span> <span class="op">|</span> <span class="string">&#39;&lt;&#39;</span> =&gt; <span class="ident">stack</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">braces</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">chr</span>).<span class="ident">expect</span>(<span class="string">&quot;Unreachable&quot;</span>)),
+            <span class="string">&#39;)&#39;</span> <span class="op">|</span> <span class="string">&#39;]&#39;</span> <span class="op">|</span> <span class="string">&#39;}&#39;</span> <span class="op">|</span> <span class="string">&#39;&gt;&#39;</span> =&gt; {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">expected</span>) <span class="op">=</span> <span class="ident">stack</span>.<span class="ident">pop</span>() {
                     <span class="kw">if</span> <span class="ident">chr</span> <span class="op">!</span><span class="op">=</span> <span class="ident">expected</span> {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MISMATCH</span> {
@@ -364,7 +364,7 @@
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UNEXPECTED</span>(<span class="ident">chr</span>));
                 }
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UNEXPECTED</span>(<span class="ident">chr</span>)),
+            <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">UNEXPECTED</span>(<span class="ident">chr</span>)),
         }
     }
 
@@ -375,21 +375,21 @@
 }
 
 <span class="doccomment">/// Given the list of braces needed to complete a string, fold them into the autocomplete score</span>
-<span class="kw">fn</span> <span class="ident">score_line_autocomplete</span>(<span class="ident">line</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+<span class="kw">fn</span> <span class="ident">score_line_autocomplete</span>(<span class="ident">line</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>) -&gt; <span class="ident">usize</span> {
     <span class="ident">line</span>.<span class="ident">iter</span>()
         .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">c</span> {
-            <span class="string">&#39;)&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">1</span>),
-            <span class="string">&#39;]&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">2</span>),
-            <span class="string">&#39;}&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">3</span>),
-            <span class="string">&#39;&gt;&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">4</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="string">&#39;)&#39;</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">1</span>),
+            <span class="string">&#39;]&#39;</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">2</span>),
+            <span class="string">&#39;}&#39;</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">3</span>),
+            <span class="string">&#39;&gt;&#39;</span> =&gt; <span class="prelude-val">Some</span>(<span class="number">4</span>),
+            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         })
         .<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">score</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">*</span> <span class="number">5</span> <span class="op">+</span> <span class="ident">score</span>)
 }
 
 <span class="doccomment">/// Find all the lines in the input that are valid, work out the autocomplete score for each, and return the median</span>
 <span class="doccomment">/// score.</span>
-<span class="kw">fn</span> <span class="ident">median_autocomplete_score</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+<span class="kw">fn</span> <span class="ident">median_autocomplete_score</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="ident">usize</span> {
     <span class="kw">let</span> <span class="ident">scores</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>
         .<span class="ident">lines</span>()
         .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">l</span><span class="op">|</span> <span class="ident">check_line</span>(<span class="ident">l</span>).<span class="ident">ok</span>())
@@ -508,7 +508,7 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">sample_input</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">sample_input</span>() -&gt; <span class="ident">String</span> {
         <span class="string">&quot;[({(&lt;(())[]&gt;[[{[]{&lt;()&lt;&gt;&gt;\n\
              [(()[&lt;&gt;])]({[&lt;{&lt;&lt;[]&gt;&gt;(\n\
              {([(&lt;{}[&lt;&gt;[]}&gt;{[]{[(&lt;()&gt;\n\

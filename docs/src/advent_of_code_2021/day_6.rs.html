@@ -141,7 +141,7 @@
 
 <span class="doccomment">/// Reduces a comma-separated list of numbers representing the number of days until that fish will</span>
 <span class="doccomment">/// next reproduce, into a summary array that contains the count for each day.</span>
-<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> [<span class="ident">usize</span>; <span class="number">9</span>] {
+<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="ident">String</span>) -&gt; [<span class="ident">usize</span>; <span class="number">9</span>] {
     <span class="comment">// parse the initial input to a list of `usize`</span>
     <span class="kw">let</span> <span class="ident">fish</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>
         .<span class="ident">trim</span>()
@@ -160,9 +160,9 @@
 
 <span class="doccomment">/// Recursive function that iterates the population `days` times, returning the resulting</span>
 <span class="doccomment">/// population summary.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">simulate</span>(<span class="ident">fish_pops</span>: [<span class="ident">usize</span>; <span class="number">9</span>], <span class="ident">days</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> [<span class="ident">usize</span>; <span class="number">9</span>] {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">simulate</span>(<span class="ident">fish_pops</span>: [<span class="ident">usize</span>; <span class="number">9</span>], <span class="ident">days</span>: <span class="ident">usize</span>) -&gt; [<span class="ident">usize</span>; <span class="number">9</span>] {
     <span class="comment">// base case - return the current population</span>
-    <span class="kw">if</span> <span class="ident">days</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">days</span> <span class="op">==</span> <span class="number">0</span> {
         <span class="kw">return</span> <span class="ident">fish_pops</span>;
     }
 

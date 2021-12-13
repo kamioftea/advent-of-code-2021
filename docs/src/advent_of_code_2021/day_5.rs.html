@@ -288,17 +288,17 @@
 
 <span class="kw">impl</span> <span class="ident">Line</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">x1</span>: <span class="ident">usize</span>, <span class="ident">y1</span>: <span class="ident">usize</span>, <span class="ident">x2</span>: <span class="ident">usize</span>, <span class="ident">y2</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Line</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">x1</span>: <span class="ident">usize</span>, <span class="ident">y1</span>: <span class="ident">usize</span>, <span class="ident">x2</span>: <span class="ident">usize</span>, <span class="ident">y2</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Line</span> {
         <span class="kw">return</span> <span class="ident">Line</span> { <span class="ident">x1</span>, <span class="ident">y1</span>, <span class="ident">x2</span>, <span class="ident">y2</span> };
     }
 
     <span class="doccomment">/// True if the line is parallel to either the x or y axis</span>
-    <span class="kw">fn</span> <span class="ident">is_axial</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">x1</span> <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">x2</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">y1</span> <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">y2</span>
+    <span class="kw">fn</span> <span class="ident">is_axial</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">x1</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">x2</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">y1</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">y2</span>
     }
 
     <span class="doccomment">/// Return an iterator of the points on the grid this line intersects</span>
-    <span class="kw">fn</span> <span class="ident">get_points</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_points</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
         <span class="comment">// The number of points intersected by the line - we need the max as either d_x or d_y will be 0 for axial lines</span>
         <span class="kw">let</span> <span class="ident">length</span> <span class="op">=</span> <span class="ident">max</span>(
             (<span class="self">self</span>.<span class="ident">x1</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">x2</span> <span class="kw">as</span> <span class="ident">isize</span>).<span class="ident">abs</span>(),
@@ -306,11 +306,11 @@
         );
 
         <span class="comment">// Helper function so we don&#39;t have to repeat the step logic for x and y</span>
-        <span class="kw">fn</span> <span class="ident">get_step</span>(<span class="ident">p1</span>: <span class="ident">usize</span>, <span class="ident">p2</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
+        <span class="kw">fn</span> <span class="ident">get_step</span>(<span class="ident">p1</span>: <span class="ident">usize</span>, <span class="ident">p2</span>: <span class="ident">usize</span>) -&gt; <span class="ident">isize</span> {
             <span class="kw">match</span> (<span class="ident">p1</span>, <span class="ident">p2</span>) {
-                (<span class="ident">a</span>, <span class="ident">b</span>) <span class="kw">if</span> <span class="ident">a</span> <span class="op">&lt;</span> <span class="ident">b</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>,
-                (<span class="ident">a</span>, <span class="ident">b</span>) <span class="kw">if</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">b</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="op">-</span><span class="number">1</span>,
+                (<span class="ident">a</span>, <span class="ident">b</span>) <span class="kw">if</span> <span class="ident">a</span> <span class="op">&lt;</span> <span class="ident">b</span> =&gt; <span class="number">1</span>,
+                (<span class="ident">a</span>, <span class="ident">b</span>) <span class="kw">if</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span> =&gt; <span class="number">0</span>,
+                <span class="kw">_</span> =&gt; <span class="op">-</span><span class="number">1</span>,
             }
         }
 
@@ -347,7 +347,7 @@
 
 <span class="doccomment">/// Takes a string with lines in the form `(x1,y1) -&gt; (x2,y2)` and converts it into a list of [`Line`]s. Parsed</span>
 <span class="doccomment">/// using a regular expression.</span>
-<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">line_matcher</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;(\d+),(\d+) -&gt; (\d+),(\d+)&quot;</span>).<span class="ident">unwrap</span>();
     <span class="ident">input</span>
         .<span class="ident">lines</span>()
@@ -377,7 +377,7 @@
 }
 
 <span class="doccomment">/// Filter out diagonal lines before running the remaining lines through [`get_intersections`]</span>
-<span class="kw">fn</span> <span class="ident">get_axial_intersections</span>(<span class="ident">lines</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">get_axial_intersections</span>(<span class="ident">lines</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span>) -&gt; <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">filtered</span> <span class="op">=</span> <span class="ident">lines</span>.<span class="ident">iter</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">l</span><span class="op">|</span> <span class="ident">l</span>.<span class="ident">is_axial</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">l</span><span class="op">|</span> <span class="ident">l</span>).<span class="ident">collect</span>();
     <span class="ident">get_intersections</span>(<span class="kw-2">&amp;</span><span class="ident">filtered</span>)
 }
@@ -386,7 +386,7 @@
 <span class="doccomment">/// already seen that point so add it to a second set (visited at least twice). Points repeated more than twice can</span>
 <span class="doccomment">/// be ignored, as this is not needed to provide the puzzle solution. Return that set, the length of the set will</span>
 <span class="doccomment">/// give the number of points where two of more lines intersect.</span>
-<span class="kw">fn</span> <span class="ident">get_intersections</span>(<span class="ident">lines</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">get_intersections</span>(<span class="ident">lines</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span>) -&gt; <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visited</span>: <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">intersected</span>: <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
 
@@ -404,7 +404,7 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_5</span>::{<span class="ident">get_axial_intersections</span>, <span class="ident">get_intersections</span>, <span class="ident">parse_input</span>, <span class="ident">Line</span>};
     <span class="kw">use</span> <span class="ident">std::collections::HashSet</span>;
 
-    <span class="kw">fn</span> <span class="ident">test_lines</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">test_lines</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&gt;</span> {
         <span class="macro">vec!</span>[
             <span class="ident">Line::new</span>(<span class="number">0</span>, <span class="number">9</span>, <span class="number">5</span>, <span class="number">9</span>),
             <span class="ident">Line::new</span>(<span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">8</span>),

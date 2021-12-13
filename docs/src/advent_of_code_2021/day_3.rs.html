@@ -358,7 +358,7 @@
 <span class="doccomment">///     ]</span>
 <span class="doccomment">/// )</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">contents</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">usize</span>) {
+<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">contents</span>: <span class="ident">String</span>) -&gt; (<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">usize</span>) {
     <span class="kw">let</span> <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">contents</span>
         .<span class="ident">lines</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> {
@@ -397,9 +397,9 @@
 <span class="doccomment">/// assert_eq!(count_bit(&amp;test_data, 1 &lt;&lt; 3), 5);</span>
 <span class="doccomment">/// assert_eq!(count_bit(&amp;test_data, 1 &lt;&lt; 4), 7);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">count_bit</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">bitmask</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+<span class="kw">fn</span> <span class="ident">count_bit</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">bitmask</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
     <span class="ident">data</span>.<span class="ident">iter</span>()
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="op">&amp;&amp;</span><span class="ident">value</span><span class="op">|</span> <span class="ident">value</span> <span class="op">&amp;</span> <span class="ident">bitmask</span> <span class="op">=</span><span class="op">=</span> <span class="ident">bitmask</span>)
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="op">&amp;&amp;</span><span class="ident">value</span><span class="op">|</span> <span class="ident">value</span> <span class="op">&amp;</span> <span class="ident">bitmask</span> <span class="op">==</span> <span class="ident">bitmask</span>)
         .<span class="ident">count</span>()
 }
 
@@ -426,7 +426,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(analyse_diagnostics(&amp;test_data, 5), (22, 9));</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">analyse_diagnostics</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">length</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">usize</span>) {
+<span class="kw">fn</span> <span class="ident">analyse_diagnostics</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">length</span>: <span class="ident">usize</span>) -&gt; (<span class="ident">usize</span>, <span class="ident">usize</span>) {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gamma</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">let</span> <span class="ident">threshold</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="number">2</span>;
 
@@ -488,15 +488,15 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(analyse_life_support(&amp;test_data(), 5), (23, 10));</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">fn</span> <span class="ident">analyse_life_support</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">length</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="ident">usize</span>) {
-    <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">mut</span> <span class="ident">current</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">position</span>: <span class="ident">usize</span>, <span class="ident">keep_smallest</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+<span class="kw">fn</span> <span class="ident">analyse_life_support</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">length</span>: <span class="ident">usize</span>) -&gt; (<span class="ident">usize</span>, <span class="ident">usize</span>) {
+    <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">mut</span> <span class="ident">current</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">position</span>: <span class="ident">usize</span>, <span class="ident">keep_smallest</span>: <span class="ident">bool</span>) -&gt; <span class="ident">usize</span> {
         <span class="comment">// base case</span>
-        <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
+        <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
             <span class="kw">return</span> <span class="kw-2">*</span>(<span class="ident">current</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">expect</span>(<span class="string">&quot;Guaranteed, len == 1&quot;</span>));
         }
 
         <span class="comment">// Sanity check to prevent infinite recursion.</span>
-        <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">position</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">current</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">position</span> <span class="op">==</span> <span class="number">0</span> {
             <span class="macro">panic!</span>(
                 <span class="string">&quot;Non-unique result found. current position {}. This can occur when all values have \
                  the same bit at a position, or when the input contains a duplicate value.&quot;</span>,
@@ -529,7 +529,7 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_3</span>::{<span class="ident">analyse_diagnostics</span>, <span class="ident">analyse_life_support</span>, <span class="ident">count_bit</span>, <span class="ident">parse_input</span>};
 
-    <span class="kw">fn</span> <span class="ident">test_data</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">test_data</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="macro">vec!</span>[
             <span class="number">0b00100</span>, <span class="number">0b11110</span>, <span class="number">0b10110</span>, <span class="number">0b10111</span>, <span class="number">0b10101</span>, <span class="number">0b01111</span>, <span class="number">0b00111</span>, <span class="number">0b11100</span>, <span class="number">0b10000</span>,
             <span class="number">0b11001</span>, <span class="number">0b00010</span>, <span class="number">0b01010</span>,

@@ -375,22 +375,22 @@
     <span class="doccomment">/// now 5, the card has won - return true, otherwise return false.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If the number is not on the card, nothing changes, and return false.</span>
-    <span class="kw">fn</span> <span class="ident">mark_number</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">number</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">mark_number</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">number</span>: <span class="ident">u8</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">numbers</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">number</span>) {
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(<span class="ident">x</span>, <span class="ident">y</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>(<span class="ident">x</span>, <span class="ident">y</span>)) =&gt; {
                 <span class="self">self</span>.<span class="ident">columns</span>[<span class="ident">x</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">columns</span>[<span class="ident">x</span>] <span class="op">+</span> <span class="number">1</span>;
                 <span class="self">self</span>.<span class="ident">rows</span>[<span class="ident">y</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">rows</span>[<span class="ident">y</span>] <span class="op">+</span> <span class="number">1</span>;
                 <span class="self">self</span>.<span class="ident">numbers</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">number</span>);
 
-                <span class="self">self</span>.<span class="ident">columns</span>[<span class="ident">x</span>] <span class="op">=</span><span class="op">=</span> <span class="number">5</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">rows</span>[<span class="ident">y</span>] <span class="op">=</span><span class="op">=</span> <span class="number">5</span>
+                <span class="self">self</span>.<span class="ident">columns</span>[<span class="ident">x</span>] <span class="op">==</span> <span class="number">5</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">rows</span>[<span class="ident">y</span>] <span class="op">==</span> <span class="number">5</span>
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="prelude-val">None</span> =&gt; <span class="bool-val">false</span>,
         }
     }
 
     <span class="doccomment">/// The remaining numbers are the keys of the numbers hash map, as marked numbers are removed</span>
     <span class="doccomment">/// from the map.</span>
-    <span class="kw">fn</span> <span class="ident">sum_remaining</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">sum_remaining</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">numbers</span>.<span class="ident">keys</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">k</span><span class="op">|</span> <span class="ident">k</span> <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">sum</span>()
     }
 }
@@ -425,7 +425,7 @@
 
 <span class="doccomment">/// Iterate through the numbers, marking each card as appropriate. Return the first card to win and</span>
 <span class="doccomment">/// the number that triggered it, as both are needed to calculate the puzzle solution.</span>
-<span class="kw">fn</span> <span class="ident">play_bingo</span>(<span class="ident">numbers</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">cards</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BingoCard</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">BingoCard</span>, <span class="ident">u8</span>) {
+<span class="kw">fn</span> <span class="ident">play_bingo</span>(<span class="ident">numbers</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">cards</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BingoCard</span><span class="op">&gt;</span>) -&gt; (<span class="ident">BingoCard</span>, <span class="ident">u8</span>) {
     <span class="comment">// Create a mutable copy. The cards need to be mutable as marking a number on a card mutates it.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">my_cards</span> <span class="op">=</span> <span class="ident">cards</span>.<span class="ident">to_vec</span>();
     <span class="comment">// Cache the size of the card list</span>
@@ -450,7 +450,7 @@
 <span class="doccomment">/// Iterate through the numbers, marking each card as appropriate. Very similar to [`play_bingo`]</span>
 <span class="doccomment">/// except it needs to keep going until all cards have won. This leads to some complexity to</span>
 <span class="doccomment">/// manage removing the cards from the iterator as we&#39;re looping over the same list.</span>
-<span class="kw">fn</span> <span class="ident">play_bingo_until_last</span>(<span class="ident">numbers</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">cards</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BingoCard</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">BingoCard</span>, <span class="ident">u8</span>) {
+<span class="kw">fn</span> <span class="ident">play_bingo_until_last</span>(<span class="ident">numbers</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">cards</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BingoCard</span><span class="op">&gt;</span>) -&gt; (<span class="ident">BingoCard</span>, <span class="ident">u8</span>) {
     <span class="comment">// Create a mutable copy</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">my_cards</span> <span class="op">=</span> <span class="ident">cards</span>.<span class="ident">to_vec</span>();
     <span class="comment">// Track the current length of the active cards</span>
@@ -465,7 +465,7 @@
             <span class="comment">// If the card wins it needs to be removed from the active set</span>
             <span class="kw">if</span> <span class="ident">card</span>.<span class="ident">mark_number</span>(<span class="ident">number</span>) {
                 <span class="comment">// if it is the last one, were done - return the data needed for the puzzle result.</span>
-                <span class="kw">if</span> <span class="ident">size</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
+                <span class="kw">if</span> <span class="ident">size</span> <span class="op">==</span> <span class="number">1</span> {
                     <span class="kw">return</span> (<span class="ident">card</span>.<span class="ident">clone</span>(), <span class="ident">number</span>);
                 }
 
@@ -485,7 +485,7 @@
 <span class="doccomment">/// Parse the puzzle input into the internal representation. first there is a line of numbers in</span>
 <span class="doccomment">/// the sequence the will be called to mark on the cards, then 100 5 x 5 grids of numbers</span>
 <span class="doccomment">/// representing each card. The first line and each card are separated by blank lines.</span>
-<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">contents</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BingoCard</span><span class="op">&gt;</span>) {
+<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">contents</span>: <span class="ident">String</span>) -&gt; (<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BingoCard</span><span class="op">&gt;</span>) {
     <span class="comment">// Split on the double new lines that separate each section.</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sections</span> <span class="op">=</span> <span class="ident">contents</span>.<span class="ident">split</span>(<span class="string">&quot;\n\n&quot;</span>);
     <span class="comment">// The first section is comma separated numbers</span>
@@ -510,7 +510,7 @@
 <span class="doccomment">/// there to be two spaces prefixing those numbers. [`Iterator::enumerate`] is used to track the</span>
 <span class="doccomment">/// current co-ordinates for building the map of unmarked numbers. The row and column arrays are</span>
 <span class="doccomment">/// initialised to 0s as no numbers have yet been marked.</span>
-<span class="kw">fn</span> <span class="ident">parse_card</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BingoCard</span> {
+<span class="kw">fn</span> <span class="ident">parse_card</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">BingoCard</span> {
     <span class="kw">let</span> <span class="ident">splitter</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="string">&quot; +&quot;</span>).<span class="ident">unwrap</span>();
 
     <span class="kw">let</span> <span class="ident">numbers</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u8</span>, (<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">input</span>
@@ -536,7 +536,7 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_4</span>::{<span class="ident">parse_card</span>, <span class="ident">parse_input</span>, <span class="ident">play_bingo</span>, <span class="ident">play_bingo_until_last</span>, <span class="ident">BingoCard</span>};
     <span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
 
-    <span class="kw">fn</span> <span class="ident">test_card</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BingoCard</span> {
+    <span class="kw">fn</span> <span class="ident">test_card</span>() -&gt; <span class="ident">BingoCard</span> {
         <span class="attribute">#[<span class="ident">rustfmt::skip</span>]</span> <span class="comment">// keep map literal in grid format</span>
         <span class="kw">let</span> <span class="ident">expected_numbers</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u8</span>, (<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span>
             <span class="ident">HashMap::from</span>([
@@ -607,7 +607,7 @@
         );
     }
 
-    <span class="kw">fn</span> <span class="ident">test_input</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">test_input</span>() -&gt; <span class="ident">String</span> {
         <span class="string">&quot;7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0

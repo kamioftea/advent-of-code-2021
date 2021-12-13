@@ -8,15 +8,15 @@ built-in methods on Rust’s iterators.</p>
 three consecutive values over the input. <a href="fn.sum_windows.html" title="sum_windows"><code>sum_windows</code></a> provides a vector of these sums, which
 is suitable to then be passed to <a href="fn.count_increments.html" title="count_increments"><code>count_increments</code></a> to produce the final answer. For this I
 originally included itertools to use their <code>izip!</code> macro to zip three iterators together, each
-offset by one more. I updated it to use <a href="https://doc.rust-lang.org/1.56.1/std/primitive.slice.html#method.windows" title="slice::windows"><code>slice::windows</code></a> thanks to <a href="https://github.com/bjgill/advent-of-code-2021/blob/1f086dcb6d5cd9bc1152a9a0db87d16b67d2cdb2/src/bin/day1.rs#L20">@bjgill’s</a>
+offset by one more. I updated it to use <a href="https://doc.rust-lang.org/1.57.0/std/primitive.slice.html#method.windows" title="slice::windows"><code>slice::windows</code></a> thanks to <a href="https://github.com/bjgill/advent-of-code-2021/blob/1f086dcb6d5cd9bc1152a9a0db87d16b67d2cdb2/src/bin/day1.rs#L20">@bjgill’s</a>
 comment on the x-gov slack channel.</p>
 </div></details><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
-<div class="item-table"><div class="item-left module-item"><a class="fn" href="fn.count_increments.html" title="advent_of_code_2021::day_1::count_increments fn">count_increments</a></div><div class="item-right docblock-short"><p>Iterate over a moving window of pairs, returning the count where the second number is greater
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.count_increments.html" title="advent_of_code_2021::day_1::count_increments fn">count_increments</a></div><div class="item-right docblock-short"><p>Iterate over a moving window of pairs, returning the count where the second number is greater
 that the first.</p>
-</div><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_1::run fn">run</a></div><div class="item-right docblock-short"><p>This is the entry point for the day’s puzzle solutions. It will load the input file, parse it
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_1::run fn">run</a></div><div class="item-right docblock-short"><p>This is the entry point for the day’s puzzle solutions. It will load the input file, parse it
 into a <code>Vec&lt;i32</code> and pass it to the relevant functions for each part.</p>
-</div><div class="item-left module-item"><a class="fn" href="fn.sum_windows.html" title="advent_of_code_2021::day_1::sum_windows fn">sum_windows</a></div><div class="item-right docblock-short"><p>Iterate over a moving window of three consecutive items, returning a vector where each item is
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.sum_windows.html" title="advent_of_code_2021::day_1::sum_windows fn">sum_windows</a></div><div class="item-right docblock-short"><p>Iterate over a moving window of three consecutive items, returning a vector where each item is
 the sum of te current window.</p>
-</div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+</div></div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script>
 </body></html>

@@ -271,7 +271,7 @@
 <span class="kw">impl</span> <span class="ident">Grid</span> {
     <span class="doccomment">/// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates</span>
     <span class="doccomment">/// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_all_surrounds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>((<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u8</span>)<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_all_surrounds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>((<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u8</span>)<span class="op">&gt;</span> {
         [
             (<span class="op">-</span><span class="number">1</span>, <span class="op">-</span><span class="number">1</span>),
             (<span class="op">-</span><span class="number">1</span>, <span class="number">0</span>),
@@ -295,7 +295,7 @@
     <span class="doccomment">/// to the trigger queue. Once the queue has been exhausted, we iterate through the resulting set of co-ordinates</span>
     <span class="doccomment">/// that flashed this iteration, set them to 0 and return the size of the set, as this is the metric needed for</span>
     <span class="doccomment">/// both parts&#39; solutions.</span>
-    <span class="kw">fn</span> <span class="ident">iterate_and_flash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">iterate_and_flash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flashes</span>: <span class="ident">HashSet</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashSet::new</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">to_flash</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
 
@@ -303,7 +303,7 @@
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(((<span class="ident">y</span>, <span class="ident">x</span>), <span class="ident">val</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_with_coords</span>(<span class="ident">i</span>) {
                 <span class="self">self</span>.<span class="ident">set</span>(<span class="ident">y</span>, <span class="ident">x</span>, <span class="ident">val</span> <span class="op">+</span> <span class="number">1</span>);
 
-                <span class="kw">if</span> <span class="ident">val</span> <span class="op">=</span><span class="op">=</span> <span class="number">9</span> {
+                <span class="kw">if</span> <span class="ident">val</span> <span class="op">==</span> <span class="number">9</span> {
                     <span class="ident">to_flash</span>.<span class="ident">push</span>((<span class="ident">y</span>, <span class="ident">x</span>));
                 }
             }
@@ -317,7 +317,7 @@
 
             <span class="kw">for</span> ((<span class="ident">y1</span>, <span class="ident">x1</span>), <span class="ident">val</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">get_all_surrounds</span>(<span class="ident">y</span>, <span class="ident">x</span>) {
                 <span class="self">self</span>.<span class="ident">set</span>(<span class="ident">y1</span>, <span class="ident">x1</span>, <span class="ident">val</span> <span class="op">+</span> <span class="number">1</span>);
-                <span class="kw">if</span> <span class="ident">val</span> <span class="op">=</span><span class="op">=</span> <span class="number">9</span> {
+                <span class="kw">if</span> <span class="ident">val</span> <span class="op">==</span> <span class="number">9</span> {
                     <span class="ident">to_flash</span>.<span class="ident">push</span>((<span class="ident">y1</span>, <span class="ident">x1</span>))
                 }
             }
@@ -331,7 +331,7 @@
     }
 
     <span class="doccomment">/// Solution to part one. Iterate the grid &lt;cycles&gt; times, summing the flashes this causes.</span>
-    <span class="kw">fn</span> <span class="ident">count_flashes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cycles</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">count_flashes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cycles</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">total</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
 
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">cycles</span> {
@@ -343,13 +343,13 @@
 
     <span class="doccomment">/// Solution to part two. Iterate the grid until the set of flashes is the same size as the grid, i.e. all cells</span>
     <span class="doccomment">/// triggered a flash. Return the number of iterations required to reach that point.</span>
-    <span class="kw">fn</span> <span class="ident">run_until_sync</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">run_until_sync</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="kw">let</span> <span class="ident">target</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">numbers</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iteration</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
 
         <span class="kw">loop</span> {
             <span class="ident">iteration</span> <span class="op">=</span> <span class="ident">iteration</span> <span class="op">+</span> <span class="number">1</span>;
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">iterate_and_flash</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">target</span> {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">iterate_and_flash</span>() <span class="op">==</span> <span class="ident">target</span> {
                 <span class="kw">return</span> <span class="ident">iteration</span>;
             }
         }

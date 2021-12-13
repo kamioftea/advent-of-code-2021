@@ -549,7 +549,7 @@
 
 <span class="kw">impl</span> <span class="ident">Display</span> {
     <span class="doccomment">/// Map each output digit to the corresponding decimal and combine by folding.</span>
-    <span class="kw">fn</span> <span class="ident">get_output</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">get_output</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">output</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> {
@@ -577,7 +577,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Technically this accepts more than just sets of a-g, but that does not need to be handled</span>
     <span class="doccomment">/// for the puzzle input.</span>
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">digit</span> <span class="op">=</span> <span class="ident">Digit</span> { <span class="ident">bits</span>: <span class="number">0</span>, <span class="ident">len</span>: <span class="number">0</span> };
         <span class="ident">s</span>.<span class="ident">chars</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> {
             <span class="comment">// chars can be converted to their ascii int just by caching - so this calculates the</span>
@@ -614,7 +614,7 @@
 
 <span class="doccomment">/// Utility for the whole puzzle input that just defers to [`parse_line`] for each line of the</span>
 <span class="doccomment">/// input.</span>
-<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Display</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Display</span><span class="op">&gt;</span> {
     <span class="ident">input</span>.<span class="ident">lines</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> <span class="ident">parse_line</span>(<span class="ident">line</span>)).<span class="ident">collect</span>()
 }
 
@@ -623,9 +623,9 @@
 <span class="doccomment">/// digits are parsed using [`Digit::from_str`]. Then there are the three loops discussed in the</span>
 <span class="doccomment">/// preamble that identify 1, 4, 7 and 8; 0, 6 and 9, then finally 2, 3, and 5. Building the digits</span>
 <span class="doccomment">/// map needed for [`Display`] as numbers are found.</span>
-<span class="kw">fn</span> <span class="ident">parse_line</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Display</span> {
+<span class="kw">fn</span> <span class="ident">parse_line</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Display</span> {
     <span class="comment">// Extracted to avoid repetition, also can use more implicit typing this way.</span>
-    <span class="kw">fn</span> <span class="ident">parse_digit</span>(<span class="ident">digit</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Digit</span> {
+    <span class="kw">fn</span> <span class="ident">parse_digit</span>(<span class="ident">digit</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Digit</span> {
         <span class="ident">digit</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>()
     }
 
@@ -646,21 +646,21 @@
         <span class="comment">// First pass - capture digits that have a unique length</span>
         <span class="ident">unassigned_digits</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">digit</span><span class="op">|</span> {
             <span class="kw">match</span> <span class="ident">digit</span>.<span class="ident">len</span> {
-                <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">2</span> =&gt; {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">1</span>);
                     <span class="ident">one</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">digit</span>.<span class="ident">bits</span>);
                 }
-                <span class="number">3</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">3</span> =&gt; {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">7</span>);
                 }
-                <span class="number">4</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">4</span> =&gt; {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">4</span>);
                     <span class="ident">four</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">digit</span>.<span class="ident">bits</span>);
                 }
-                <span class="number">7</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">7</span> =&gt; {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">8</span>);
                 }
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+                <span class="kw">_</span> =&gt; {}
             };
         });
 
@@ -669,15 +669,15 @@
         <span class="comment">// Second pass - capture 6, 9, 0 using their intersection with unique digits 1 and 4</span>
         <span class="ident">unassigned_digits</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">digit</span><span class="op">|</span> <span class="ident">digit</span>.<span class="ident">len</span> <span class="op">=</span><span class="op">=</span> <span class="number">6</span>)
+            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">digit</span><span class="op">|</span> <span class="ident">digit</span>.<span class="ident">len</span> <span class="op">==</span> <span class="number">6</span>)
             .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">digit</span><span class="op">|</span> {
                 <span class="comment">// 9 intersects with 4, 6 and 0 don&#39;t.</span>
-                <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">four</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 4&quot;</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">four</span>.<span class="ident">unwrap</span>() {
+                <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">four</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 4&quot;</span>) <span class="op">==</span> <span class="ident">four</span>.<span class="ident">unwrap</span>() {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">9</span>);
                     <span class="ident">nine</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">digit</span>.<span class="ident">bits</span>);
                 }
                 <span class="comment">// 0 and 9 intersect with 1, but 9 is already captured above</span>
-                <span class="kw">else</span> <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">one</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 1&quot;</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">one</span>.<span class="ident">unwrap</span>() {
+                <span class="kw">else</span> <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">one</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 1&quot;</span>) <span class="op">==</span> <span class="ident">one</span>.<span class="ident">unwrap</span>() {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">0</span>);
                 }
                 <span class="comment">// Can only be 6 by process of elimination</span>
@@ -689,14 +689,14 @@
         <span class="comment">// Third pass - capture 2, 3, 5 using their intersections with digits 1 and 9</span>
         <span class="ident">unassigned_digits</span>
             .<span class="ident">iter</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">digit</span><span class="op">|</span> <span class="ident">digit</span>.<span class="ident">len</span> <span class="op">=</span><span class="op">=</span> <span class="number">5</span>)
+            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">digit</span><span class="op">|</span> <span class="ident">digit</span>.<span class="ident">len</span> <span class="op">==</span> <span class="number">5</span>)
             .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">digit</span><span class="op">|</span> {
                 <span class="comment">// 1 is included in 3, but not 2 or 5</span>
-                <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">one</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 1&quot;</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">one</span>.<span class="ident">unwrap</span>() {
+                <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">one</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 1&quot;</span>) <span class="op">==</span> <span class="ident">one</span>.<span class="ident">unwrap</span>() {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">3</span>);
                 }
                 <span class="comment">// 5 is included in 9, but not in 2 and 3 are not</span>
-                <span class="kw">else</span> <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">nine</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 9&quot;</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">digit</span>.<span class="ident">bits</span> {
+                <span class="kw">else</span> <span class="kw">if</span> <span class="ident">digit</span>.<span class="ident">bits</span> <span class="op">&amp;</span> <span class="ident">nine</span>.<span class="ident">expect</span>(<span class="string">&quot;digits missing 9&quot;</span>) <span class="op">==</span> <span class="ident">digit</span>.<span class="ident">bits</span> {
                     <span class="ident">digits</span>.<span class="ident">insert</span>(<span class="ident">digit</span>.<span class="ident">bits</span>, <span class="number">5</span>);
                 }
                 <span class="comment">// Can only be 2 by process of elimination</span>
@@ -714,7 +714,7 @@
 }
 
 <span class="doccomment">/// Given a list of parsed displays, count the total number of 1s, 4s, 7s, and 8s in their outputs</span>
-<span class="kw">fn</span> <span class="ident">count_unique</span>(<span class="ident">displays</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Display</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+<span class="kw">fn</span> <span class="ident">count_unique</span>(<span class="ident">displays</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Display</span><span class="op">&gt;</span>) -&gt; <span class="ident">usize</span> {
     <span class="ident">displays</span>
         .<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">display</span><span class="op">|</span> {
@@ -865,7 +865,7 @@
             })
     }
 
-    <span class="kw">fn</span> <span class="ident">get_sample_line</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="kw">fn</span> <span class="ident">get_sample_line</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
         <span class="string">&quot;acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf&quot;</span>
     }
 
@@ -876,7 +876,7 @@
         <span class="macro">assert_eq!</span>(<span class="ident">count_unique</span>(<span class="kw-2">&amp;</span><span class="ident">displays</span>), <span class="number">26</span>);
     }
 
-    <span class="kw">fn</span> <span class="ident">get_sample_input</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">get_sample_input</span>() -&gt; <span class="ident">String</span> {
         <span class="string">&quot;be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
 fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg

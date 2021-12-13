@@ -82,7 +82,7 @@ impl From<&str> for Cave {
     }
 }
 
-/// Represents a path from the start to the node at [`position`].
+/// Represents a path from the start to the node at [`Path::position`].
 #[derive(Eq, PartialEq, Debug)]
 struct Path {
     /// bitmap of visited nodes (13 puzzle input nodes - so works on 16+ bit architectures)

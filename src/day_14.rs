@@ -1,10 +1,41 @@
 //! This is my solution for [Advent of Code - Day 14 - _Extended Polymerization_](https://adventofcode.com/2021/day/14)
 //!
+//! By the end of today I was thinking it was a lot like [`crate::day_6`], but I missed how
+//! exponential it was when first reading, so implemented the naive versions for part one, but that
+//! did not complete before it ran out of memory for part two. I ended up noting that each pair
+//! would become two new pairs each step (or stay as the same pair if there was no insertion mapping
+//! for that pair). This meant I could just track the counts of each pair in a given iteration, and
+//! work out the next step by walking through the current pair counts and adding its count to each
+//! of the pairs it maps to in the counts map for the next iteration.
 //!
+//! The types are pretty convoluted today, enough so that I aliased the Polymer as map of pairs ->
+//! counts, and pair mapping of pair -> pairs when iterated into [`Polymer`] and [`PairMap`]
+//! respectively. That said, whilst the types were complex, they were a great guide for what
+//! transformations I needed to do at each step, and once I'd satisfied the type checker the
+//! solutions just worked.
+//!
+//! There's quite a lot of moving parts today, mostly involved in building the internal
+//! representation from the input, and converting the result into the required output.
+//! [`parse_input`] takes the file, transforms the seed polymer into the required map of pair counts
+//! using [`into_pair_counts`], and then takes the remaining lines and creates the PairMap. i.e. a
+//! mapping of `AB -> C` becomes `('A', 'B') => [('A', 'C'), ('C', 'B')]` which means when there is
+//! a pair `AB` the next iteration will instead have two pairs, `AC` and `CB`. [`intersperse`]
+//! handles performing a single insertion cycle, and [`iterate`] recursively calls [`intersperse`]
+//! for the required number of cycles. Finally [`summarise`] works out the counts of each of the
+//! characters. With the current implementation we need to take the counts of both parts of each
+//! pair to account for the first and last characters. This in itself involves some complex type
+//! munging, so has been extracted to [`into_count_by`]. If I was building this again I'd consider
+//! making a struct to hold the polymer, including caching the final character from the seed. This
+//! would allow just counting the first character in each pair and adding 1 to the count that
+//! matches the final character. As it is, this works and is quick enough that it's not worth the
+//! effort.
 
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::fs;
+
+type Polymer = HashMap<(char, char), usize>;
+type PairMap = HashMap<(char, char), Vec<(char, char)>>;
 
 /// The entry point for running the solutions with the 'real' puzzle input.
 ///
@@ -20,15 +51,28 @@ pub fn run() {
 
     let polymer2 = iterate(&polymer, 30, &mapping);
     let (_, result2) = summarise(&polymer2);
-    println!("The max - min counts = {} after 40 cycles.", result2)
+    let length = polymer_length(&polymer2);
+    println!(
+        "The max - min counts after 40 cycles = {}, total length {}.",
+        result2, length
+    )
 }
 
-fn parse_input(
-    input: &String,
-) -> (
-    HashMap<(char, char), usize>,
-    HashMap<(char, char), Vec<(char, char)>>,
-) {
+/// Split a list of characters into the counts of all the consecutive pairs that exist. The hard
+/// work is delegated to library functions [`slice::windows`] to give an iterator of the pairs
+/// and [`Itertools::counts`] to reduce that to the required map.
+fn into_pair_counts(polymer_chars: &Vec<char>) -> Polymer {
+    polymer_chars
+        .windows(2)
+        .map(|window| (window[0], window[1]))
+        .counts()
+}
+
+/// The types required to make today's solution work are pretty complex, so there is quite a lot of
+/// work here to take a relatively simple input format into the complex format that makes the logic
+/// efficient. A bunch of the tests need to convert intermediate polymer string representations into
+/// the map of pair counts used internally, so this is delegated to [`into_pair_counts`].
+fn parse_input(input: &String) -> (Polymer, PairMap) {
     let mut lines = input.lines();
     let seed = into_pair_counts(&lines.next().expect("Empty input").chars().collect());
     // skip blank
@@ -48,10 +92,22 @@ fn parse_input(
     (seed, mapping)
 }
 
-fn intersperse(
-    polymer: &HashMap<(char, char), usize>,
-    mapping: &HashMap<(char, char), Vec<(char, char)>>,
-) -> HashMap<(char, char), usize> {
+/// The name is a legacy from the naive solution where this was mapping each pair to the new pairs
+/// and building the full polymer in order which failed as the final polymer had ~21 trillion
+/// characters. This takes all the existing pairs and adds their counts to the pair(s) they map to
+/// when the mapped character is inserted.
+///
+/// Consider the seed `BABABA`, in the internal representation this becomes `BA => 3, AB => 2`.
+/// With the mapping `AB -> A` and `BA -> A` this would become `BAAABAAABAA` or `BA => 3, AA => 5,
+/// AB => 2`. Because each pair mapping is independent, we can view the mapping as `AB => AA, AB`,
+/// `BA => BA, AA`. So applying [`intersperse`] to the `BA => 3, AB => 2` polymer:
+/// * `BA => 3` becomes `BA => 3, AA => 3`.
+/// * The new map is empty so both are inserted with a count of 3.
+/// * `AB => 2` becomes `AA => 2, AB => 2`.
+/// * `AA` already exists with a count of 3, so these two are added to give `AA =>5`.
+/// * `AB` isn't in the map, so it is inserted with a count of 2.
+/// * This gives the expected `BA => 3, AA => 5, AB => 2` Polymer.
+fn intersperse(polymer: &Polymer, mapping: &PairMap) -> Polymer {
     let mut new = HashMap::new();
     for (pair, count) in polymer {
         if let Some(pairs) = mapping.get(&pair) {
@@ -66,22 +122,15 @@ fn intersperse(
     new
 }
 
-fn into_pair_counts(polymer: &Vec<char>) -> HashMap<(char, char), usize> {
-    polymer
-        .windows(2)
-        .map(|window| (window[0], window[1]))
-        .counts()
-}
-
-fn polymer_length(polymer: &HashMap<(char, char), usize>) -> usize {
+// Utility for counting the length of the polymer. Since they overlap, the two chars per pair and
+// two pairs per char cancel out, but we need to add one to cover that the first and last character
+// are each only in one pair.
+fn polymer_length(polymer: &Polymer) -> usize {
     polymer.values().sum::<usize>() + 1
 }
 
-fn iterate(
-    seed: &HashMap<(char, char), usize>,
-    cycles: usize,
-    mapping: &HashMap<(char, char), Vec<(char, char)>>,
-) -> HashMap<(char, char), usize> {
+/// Recursively apply [`intersperse`] the required number of times
+fn iterate(seed: &Polymer, cycles: usize, mapping: &PairMap) -> Polymer {
     if cycles == 0 {
         return seed.clone();
     }
@@ -89,27 +138,46 @@ fn iterate(
     iterate(&intersperse(seed, mapping), cycles - 1, mapping)
 }
 
-fn summarise(polymer: &HashMap<(char, char), usize>) -> (HashMap<char, usize>, usize) {
-    let starts: HashMap<char, usize> = polymer
+/// Reduce the pair mapping into a count of characters. This needs to be called twice once for each
+/// element in the pair, to account for the first and last character that are each only in one pair.
+/// The mapping parameter is to capture this difference, and maps a pair count entry from the
+/// Polymer into the character this invocation cares about
+fn into_count_by(
+    polymer: &Polymer,
+    mapping: for<'a> fn(&'a (&(char, char), &usize)) -> char,
+) -> HashMap<char, usize> {
+    polymer
         .iter()
-        .into_grouping_map_by(|((a, _), _)| a)
+        // group by the mapping - the values are now `Vec<((char, char), usize)>
+        .into_grouping_map_by(mapping)
+        // sum just the counts
         .fold(0, |acc, _, (_, &val)| acc + val)
+        // map the resulting HashMap to fix the references
         .iter()
-        .map(|(&&k, &v)| (k, v))
-        .collect();
-    let ends: HashMap<char, usize> = polymer
-        .iter()
-        .into_grouping_map_by(|((_, b), _)| b)
-        .fold(0, |acc, _, (_, &val)| acc + val)
-        .iter()
-        .map(|(&&k, &v)| (k, v))
-        .collect();
+        .map(|(&k, &v)| (k, v))
+        .collect()
+}
 
+/// This is responsible for converting the internal representation of a polymer into the data needed
+/// to provide the puzzle solution. It also returns the intermediary hashmap so that this can be
+/// verified in tests against the example provided in the specification.
+fn summarise(polymer: &Polymer) -> (HashMap<char, usize>, usize) {
+    // Get the counts bases on the first ...
+    let starts: HashMap<char, usize> = into_count_by(polymer, |((a, _), _)| *a);
+    // ... and second character in the pair
+    let ends: HashMap<char, usize> = into_count_by(polymer, |((_, b), _)| *b);
+
+    // For each character take the maximum count from these two maps. The count for the starting
+    // character is one higher as it only appears in the start of the one pair it's in, and vice
+    // versa for the final character.
     let counts: HashMap<char, usize> = starts
         .iter()
         .map(|(&chr, &count)| (chr, *ends.get(&chr).unwrap_or(&0).max(&count)))
         .collect();
 
+    // For obtaining the min and max character counts the character doesn't matter so can just use
+    // [`Itertools::minmax`] directly on the values, without the more complex mapping
+    // needed in [`into_count_by`].
     let (&min, &max) = counts
         .values()
         .minmax()

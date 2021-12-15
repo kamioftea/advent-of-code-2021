@@ -64,24 +64,45 @@ impl Grid {
 
     /// Return the value at the given co-ordinates
     pub fn get(&self, y: usize, x: usize) -> Option<u8> {
-        if x >= self.width {
-            return None;
-        }
-        self.numbers.get(x + y * self.width).map(|&t| t)
+        self.pos_of(y, x)
+            .and_then(|p| self.numbers.get(p))
+            .map(|&v| v)
     }
 
     /// Update the value in a given cell
     pub fn set(&mut self, y: usize, x: usize, val: u8) -> bool {
+        match self.pos_of(y, x) {
+            Some(pos) => {
+                self.numbers[pos] = val;
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Turn (y, x) coordinates into a position in the underlying array
+    pub fn pos_of(&self, y: usize, x: usize) -> Option<usize> {
         if x >= self.width {
-            return false;
+            return None;
         }
 
-        let pos = y * self.width + x;
-        if pos < self.numbers.len() {
-            self.numbers[pos] = val;
-            return true;
+        let pos = x + y * self.width;
+
+        if pos >= self.numbers.len() {
+            return None;
         }
-        return false;
+
+        return Some(pos);
+    }
+
+    /// The co-ordinates of the bottom right corner in (y, x) format
+    pub fn max_coords(&self) -> (usize, usize) {
+        ((self.numbers.len() - 1) / self.width, self.width - 1)
+    }
+
+    /// The number of cells in the grid
+    pub fn len(&self) -> usize {
+        self.numbers.len()
     }
 
     /// Used by [`GridCoords::next`] and other iterators over the grid , e.g. [`Grid::iterate_and_flash`] to turn the
@@ -91,6 +112,15 @@ impl Grid {
         let y = pos / self.width;
 
         self.numbers.get(pos).map(|&val| ((y, x), val))
+    }
+
+    /// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates
+    /// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.
+    pub fn get_orthogonal_surrounds(&self, y: usize, x: usize) -> Vec<((usize, usize), u8)> {
+        [(-1, 0), (0, 1), (1, 0), (0, -1)] // N E S W
+            .iter()
+            .flat_map(|&(dy, dx)| self.get_relative(y, x, dy, dx))
+            .collect()
     }
 
     /// Given a cell and a delta, return the new co-ordinates and the value at those co-ordinates if it is within the

@@ -1,20 +1,80 @@
-//! This is my solution for [Advent of Code - Day 16 - _Title_](https://adventofcode.com/2021/day/16)
+//! This is my solution for [Advent of Code - Day 16 - _Packet Decoder_](https://adventofcode.com/2021/day/16)
 //!
+//! After yesterday's very technical/theory heavy solution today was working through a fairly
+//! complex specification, but the face-value implementation was efficient once all the parts were
+//! in place.
 //!
-
+//! The bulk of the work is in parsing the input into the hierarchy of packets, [`parse_input`].
+//! This is the entry point for a number of functions that are involved in the parsing process.
+//! [`to_bits`] is a bit clunky, but returns the bits as a `Vec<bool>` in reverse order so that the
+//! bits can be consumed with [`Vec::pop`] which is much more efficient than taking them from the
+//! head of the `Vec`. [`take_bits`] consumes a specified number of bits from the tail, interpreting
+//! them as a number. [`parse_packet`] consumes the version and [`PacketType`], then delegates to
+//! [`parse_literal`] and [`parse_sub_packets`] based on the type. Each uses [`take_bits`] as
+//! appropriate to consume and interpret the required bits according to the spec, and keeps track of
+//! bits consumed to report back to any parent operation packet that is reading in bit length mode.
+//!
+//! Once that was done both part one [`Packet::version_sum`], and part two [`Packet::compute`]
+//! recursively walk the packet tree compiling the appropriate solution.
 use std::fs;
 
+/// The eight possible packet types
+#[derive(Eq, PartialEq, Debug)]
+enum PacketType {
+    /// Operation: Sum all contained packets
+    Sum,
+    /// Operation: Multiply all contained packets
+    Product,
+    /// Operation: Return the minimum of all contained packets
+    Min,
+    /// Operation: Return the maximum of all contained packets
+    Max,
+    /// Literal: This packet represents a literal number value
+    Literal,
+    /// Operation: Compare the first and only two sub packets, returns `1` if first is greater than
+    /// second, `0` otherwise.
+    GreaterThan,
+    /// Operation: Compare the first and only two sub packets, returns `1` if first is less than
+    /// second, `0` otherwise.
+    LessThan,
+    /// Operation: Compare the first and only two sub packets, returns `1` if first is equal to
+    /// second, `0` otherwise.
+    Equal,
+}
+
+impl From<usize> for PacketType {
+    fn from(num: usize) -> Self {
+        match num {
+            0 => PacketType::Sum,
+            1 => PacketType::Product,
+            2 => PacketType::Min,
+            3 => PacketType::Max,
+            4 => PacketType::Literal,
+            5 => PacketType::GreaterThan,
+            6 => PacketType::LessThan,
+            7 => PacketType::Equal,
+            _ => panic!("Invalid packet type {}", num),
+        }
+    }
+}
+
+/// Represents a packet in BITS
 #[derive(Eq, PartialEq, Debug)]
 struct Packet {
+    /// The version (0-7)
     version: usize,
-    packet_type: usize,
+    /// Indicates what this packet represents
+    packet_type: PacketType,
+    /// List of sub-packets. For PacketType::Literal this will be empty
     sub_packets: Vec<Packet>,
+    /// The literal value, for PacketTypes other than PacketType::Literal
     value: usize,
 }
 
 impl Packet {
+    /// create a packet representing an operation on sub packets
     #[cfg(test)]
-    fn new_operator(version: usize, packet_type: usize, sub_packets: Vec<Packet>) -> Packet {
+    fn new_operator(version: usize, packet_type: PacketType, sub_packets: Vec<Packet>) -> Packet {
         Packet {
             version,
             packet_type,
@@ -23,16 +83,19 @@ impl Packet {
         }
     }
 
+    /// Create a packet representing a literal number
     #[cfg(test)]
     fn new_literal(version: usize, value: usize) -> Packet {
         Packet {
             version,
-            packet_type: 4,
+            packet_type: PacketType::Literal,
             sub_packets: Vec::new(),
             value,
         }
     }
 
+    /// Solution to part one. Returns the sum of this packet's version and the version sum of all
+    /// sub-packets
     fn version_sum(&self) -> usize {
         self.version
             + self
@@ -42,17 +105,24 @@ impl Packet {
                 .sum::<usize>()
     }
 
+    /// Solution to part two. Recursively compute the value of applying the current operation to the
+    /// contained sub-packets' computed values, or return the value in the case of a literal node.
     fn compute(&self) -> usize {
         match self.packet_type {
-            0 => self.sub_packets.iter().map(Packet::compute).sum(),
-            1 => self.sub_packets.iter().map(Packet::compute).product(),
-            2 => self.sub_packets.iter().map(Packet::compute).min().unwrap(),
-            3 => self.sub_packets.iter().map(Packet::compute).max().unwrap(),
-            4 => self.value,
-            5 => (self.sub_packets[0].compute() > self.sub_packets[1].compute()) as usize,
-            6 => (self.sub_packets[0].compute() < self.sub_packets[1].compute()) as usize,
-            7 => (self.sub_packets[0].compute() == self.sub_packets[1].compute()) as usize,
-            _ => 0,
+            PacketType::Sum => self.sub_packets.iter().map(Packet::compute).sum(),
+            PacketType::Product => self.sub_packets.iter().map(Packet::compute).product(),
+            PacketType::Min => self.sub_packets.iter().map(Packet::compute).min().unwrap(),
+            PacketType::Max => self.sub_packets.iter().map(Packet::compute).max().unwrap(),
+            PacketType::Literal => self.value,
+            PacketType::GreaterThan => {
+                (self.sub_packets[0].compute() > self.sub_packets[1].compute()) as usize
+            }
+            PacketType::LessThan => {
+                (self.sub_packets[0].compute() < self.sub_packets[1].compute()) as usize
+            }
+            PacketType::Equal => {
+                (self.sub_packets[0].compute() == self.sub_packets[1].compute()) as usize
+            }
         }
     }
 }
@@ -69,6 +139,8 @@ pub fn run() {
     println!("The result of the operation is: {}", root.compute());
 }
 
+/// Parse a hexadecimal string as a sequence of bits. The returned list is reversed for ease of
+/// consuming the bits via [`Vec::pop`].
 fn to_bits(input: &String) -> Vec<bool> {
     input
         .chars()
@@ -82,21 +154,31 @@ fn to_bits(input: &String) -> Vec<bool> {
         .collect()
 }
 
+/// Consume the last `count` bits from the end of the provided vector, interpreting them as a binary
+/// representation of a usize.
 fn take_bits(bits: &mut Vec<bool>, count: usize) -> usize {
     let mut out: usize = 0;
     for _ in 0..count {
+        // Shift the next bit onto the left
         out = (out << 1) + (bits.pop().unwrap() as usize)
     }
 
     out
 }
 
+/// Parse the section of a literal packet representing the number. This will be in chunks of 5 bits,
+/// the first being a flag that indicates if parsing should continue after this chunk, the next four
+/// being the next four bits in the number. Once the continue flag is `0` indicating this is the
+/// final chunk, all four-bit sections should be concatenated and interpreted as the binary
+/// representation of a usize. Returns the value and number of bits consumed.
 fn parse_literal(mut bits: &mut Vec<bool>) -> (usize, usize) {
     let mut value = 0;
     let mut bit_count = 0;
 
     loop {
+        // Consume the next continue flag
         let last = take_bits(&mut bits, 1) == 0;
+        // Shift the next four bits left from the bit stream.
         value = (value << 4) + take_bits(&mut bits, 4);
         bit_count += 5;
         if last {
@@ -107,12 +189,55 @@ fn parse_literal(mut bits: &mut Vec<bool>) -> (usize, usize) {
     (value, bit_count)
 }
 
+/// Parse the sub-packets section of an operation packet.
+/// 1. Consume one bit indicating the mode of consuming sub packets
+///     * If `0` consume the next 15 bits as a bit length
+///     * If `1` consume the nect 11 bits as a packet count
+/// 2. Consume one sub-packet at a time using [`parse_packet`].
+///     * Decrement the bit counter by the number of bits consumed, or the packet counter by `1` as
+///       each packet is consumed.
+///     * Keep a running total of bits consumed.
+/// 3. Return the list of parsed packets, and the total bits consumed
+fn parse_sub_packets(mut bits: &mut Vec<bool>) -> (Vec<Packet>, usize) {
+    let mut bit_count: usize = 0;
+    let mut sub_packets = Vec::new();
+
+    let length_is_bits = take_bits(&mut bits, 1) == 0;
+    bit_count += 1;
+
+    if length_is_bits {
+        let mut bits_to_take = take_bits(&mut bits, 15);
+        bit_count += 15;
+
+        while bits_to_take > 0 {
+            let (sub_packet, bit_length) = parse_packet(&mut bits);
+            sub_packets.push(sub_packet);
+            bit_count += bit_length;
+            bits_to_take -= bit_length;
+        }
+    } else {
+        let mut packets_to_take = take_bits(&mut bits, 11);
+        bit_count += 11;
+
+        while packets_to_take > 0 {
+            let (sub_packet, bit_length) = parse_packet(&mut bits);
+            sub_packets.push(sub_packet);
+            bit_count += bit_length;
+            packets_to_take -= 1;
+        }
+    }
+    (sub_packets, bit_count)
+}
+
+/// Read the packet header (version: 3 bits, type: 3 bits). Then based of the type delegate the
+/// parsing of the payload to either [`parse_literal`] or [`parse_sub_packets`]. Return the parsed
+/// [`Packet`] and number of bits consumed
 fn parse_packet(mut bits: &mut Vec<bool>) -> (Packet, usize) {
     let version = take_bits(bits, 3);
-    let packet_type = take_bits(bits, 3);
-    let mut taken = 6usize;
-    if packet_type == 4 {
-        let (value, bit_count) = parse_literal(&mut bits);
+    let packet_type = PacketType::from(take_bits(bits, 3));
+    let root_bit_count = 6usize;
+    if packet_type == PacketType::Literal {
+        let (value, literal_bit_count) = parse_literal(&mut bits);
         (
             Packet {
                 version,
@@ -120,34 +245,10 @@ fn parse_packet(mut bits: &mut Vec<bool>) -> (Packet, usize) {
                 sub_packets: Vec::new(),
                 value,
             },
-            taken + bit_count,
+            root_bit_count + literal_bit_count,
         )
     } else {
-        let length_is_bits = take_bits(&mut bits, 1) == 0;
-        let mut sub_packets = Vec::new();
-        taken += 1;
-        if length_is_bits {
-            let mut bits_to_take = take_bits(&mut bits, 15);
-            taken = taken + 15;
-
-            while bits_to_take > 0 {
-                let (sub_packet, bit_length) = parse_packet(&mut bits);
-                sub_packets.push(sub_packet);
-                taken += bit_length;
-                bits_to_take -= bit_length;
-            }
-        } else {
-            let mut packets_to_take = take_bits(&mut bits, 11);
-            taken = taken + 11;
-
-            while packets_to_take > 0 {
-                let (sub_packet, bit_length) = parse_packet(&mut bits);
-                sub_packets.push(sub_packet);
-                taken += bit_length;
-                packets_to_take -= 1;
-            }
-        }
-
+        let (sub_packets, sub_bit_count) = parse_sub_packets(&mut bits);
         (
             Packet {
                 version,
@@ -155,7 +256,7 @@ fn parse_packet(mut bits: &mut Vec<bool>) -> (Packet, usize) {
                 sub_packets,
                 value: 0,
             },
-            taken,
+            root_bit_count + sub_bit_count,
         )
     }
 }
@@ -168,7 +269,7 @@ fn parse_input(input: &String) -> Packet {
 
 #[cfg(test)]
 mod tests {
-    use crate::day_16::{parse_input, take_bits, to_bits, Packet};
+    use crate::day_16::{parse_input, take_bits, to_bits, Packet, PacketType};
 
     fn sample_literal() -> Vec<bool> {
         "110100101111111000101000"
@@ -210,7 +311,7 @@ mod tests {
             parse_input(&"38006F45291200".to_string()),
             Packet::new_operator(
                 1,
-                6,
+                PacketType::LessThan,
                 Vec::from([Packet::new_literal(6, 10), Packet::new_literal(2, 20)])
             )
         )
@@ -222,7 +323,7 @@ mod tests {
             parse_input(&"EE00D40C823060".to_string()),
             Packet::new_operator(
                 7,
-                3,
+                PacketType::Max,
                 Vec::from([
                     Packet::new_literal(2, 1),
                     Packet::new_literal(4, 2),

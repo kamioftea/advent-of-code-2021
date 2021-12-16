@@ -118,9 +118,9 @@ fn intersperse(polymer: &Polymer, mapping: &PairMap) -> Polymer {
                 new.insert(*p, new.get(p).unwrap_or(&0) + count);
             })
         } else {
-            /// If a pair is not in the map it remains unchanged. This doesn't come up for the
-            /// sample input, and I've not checked for the puzzle input, but it's easy enough to
-            /// implement and keeps the compiler happy.
+            // If a pair is not in the map it remains unchanged. This doesn't come up for the
+            // sample input, and I've not checked for the puzzle input, but it's easy enough to
+            // implement and keeps the compiler happy.
             new.insert(*pair, new.get(pair).unwrap_or(&0) + count);
         };
     }

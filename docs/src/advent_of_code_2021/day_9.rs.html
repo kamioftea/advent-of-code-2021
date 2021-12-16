@@ -232,15 +232,6 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 9 - _Smoke Basin_](https://adventofcode.com/2021/day/9)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! _**Note**: At the time of writing [`Grid`] was part of the Day 9 module. Parts that were reused for Day 11 have</span>
@@ -282,15 +273,6 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::grid::Grid</span>;
 
 <span class="kw">impl</span> <span class="ident">Grid</span> {
-    <span class="doccomment">/// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates</span>
-    <span class="doccomment">/// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.</span>
-    <span class="kw">fn</span> <span class="ident">get_orthogonal_surrounds</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span>((<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u8</span>)<span class="op">&gt;</span> {
-        [(<span class="op">-</span><span class="number">1</span>, <span class="number">0</span>), (<span class="number">0</span>, <span class="number">1</span>), (<span class="number">1</span>, <span class="number">0</span>), (<span class="number">0</span>, <span class="op">-</span><span class="number">1</span>)] <span class="comment">// N E S W</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">dy</span>, <span class="ident">dx</span>)<span class="op">|</span> <span class="self">self</span>.<span class="ident">get_relative</span>(<span class="ident">y</span>, <span class="ident">x</span>, <span class="ident">dy</span>, <span class="ident">dx</span>))
-            .<span class="ident">collect</span>()
-    }
-
     <span class="doccomment">/// Is the provided grid cell a local minimum</span>
     <span class="kw">fn</span> <span class="ident">is_lowest</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">y</span>: <span class="ident">usize</span>, <span class="ident">x</span>: <span class="ident">usize</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">y</span>, <span class="ident">x</span>)

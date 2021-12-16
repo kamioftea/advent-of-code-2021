@@ -424,9 +424,9 @@
                 <span class="ident">new</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">p</span>, <span class="ident">new</span>.<span class="ident">get</span>(<span class="ident">p</span>).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="number">0</span>) <span class="op">+</span> <span class="ident">count</span>);
             })
         } <span class="kw">else</span> {
-            <span class="doccomment">/// If a pair is not in the map it remains unchanged. This doesn&#39;t come up for the</span>
-            <span class="doccomment">/// sample input, and I&#39;ve not checked for the puzzle input, but it&#39;s easy enough to</span>
-            <span class="doccomment">/// implement and keeps the compiler happy.</span>
+            <span class="comment">// If a pair is not in the map it remains unchanged. This doesn&#39;t come up for the</span>
+            <span class="comment">// sample input, and I&#39;ve not checked for the puzzle input, but it&#39;s easy enough to</span>
+            <span class="comment">// implement and keeps the compiler happy.</span>
             <span class="ident">new</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">pair</span>, <span class="ident">new</span>.<span class="ident">get</span>(<span class="ident">pair</span>).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="number">0</span>) <span class="op">+</span> <span class="ident">count</span>);
         };
     }

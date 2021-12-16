@@ -39,15 +39,6 @@ use std::fs;
 pub use crate::util::grid::Grid;
 
 impl Grid {
-    /// Iterate through the four orthogonal cells, collecting the 2 - 4 values into a vector. Include the co-ordinates
-    /// in the returned vector so that [`Grid::get_basin`] can recursively expand the set of cells in the basin.
-    fn get_orthogonal_surrounds(&self, y: usize, x: usize) -> Vec<((usize, usize), u8)> {
-        [(-1, 0), (0, 1), (1, 0), (0, -1)] // N E S W
-            .iter()
-            .flat_map(|&(dy, dx)| self.get_relative(y, x, dy, dx))
-            .collect()
-    }
-
     /// Is the provided grid cell a local minimum
     fn is_lowest(&self, y: usize, x: usize) -> bool {
         self.get(y, x)

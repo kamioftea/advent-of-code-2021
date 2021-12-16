@@ -1,12 +1,24 @@
 //! This is my solution for [Advent of Code - Day 15 - _Chiton_](https://adventofcode.com/2021/day/15)
 //!
+//! I picked up pretty quickly that this needed a shortest-path graph traversal algorithm, and (very) vaguely
+//! remembered Dijkstra's from when it was covered in my A-Level math course. I did some googling to refresh my memory,
+//! noted the advice to use a [`BinaryHeap`], found that the Rust std implementation had Dijkstra's
+//! as it's main example in the docs. I imported [`Grid`] from previous days, and updated the
+//! example code to work with co-ordinates, and it just worked: [`find_shortest_path`].
 //!
+//! For part two I didn't want to store the much bigger and repeated graph in memory, so I wrote a wrapper
+//! [`ExpandedGrid`] that would provide implementations for all the methods used by [`find_shortest_path`] and work out
+//! how to translate that to methods on the underlying sub-grid, get methods being [`ExpandedGrid::pos_of`] and
+//! [`ExpandedGrid::get`]. The wrapper ended up a little messy, but it'll do for AoC. If I was planning to need to
+//! maintain this code, I'd maybe look into extracting some parts to a trait so that I'm not repeating code from
+//! [`Grid`].
 
 use crate::util::grid::Grid;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::fs;
 
+/// This is juts copied from  the example [`std::collections::BinaryHeap`] with position swapped for coords.
 #[derive(Copy, Clone, Eq, PartialEq)]
 struct Cell {
     cost: usize,
@@ -35,25 +47,20 @@ impl PartialOrd for Cell {
     }
 }
 
+/// A wrapper around [`Grid`] that handles tiling a smaller sub-grid.
 struct ExpandedGrid<'a> {
+    /// The wrapped sub-grid
     grid: &'a Grid,
+    /// Cache the calculated height
     sub_grid_height: usize,
+    /// Number of times the grid is tiled in the y axis
     copies_y: usize,
+    /// Number of times the grid is tiled in the x axis
     copies_x: usize,
 }
 
-impl<'a> ExpandedGrid<'a> {
-    pub(crate) fn with_copies(&self, copies_y: usize, copies_x: usize) -> ExpandedGrid<'a> {
-        ExpandedGrid {
-            grid: self.grid,
-            sub_grid_height: self.sub_grid_height,
-            copies_y,
-            copies_x,
-        }
-    }
-}
-
 impl<'a> From<&'a Grid> for ExpandedGrid<'a> {
+    /// Build an untiled wrapper from a given sub-grid. See also [`ExpandedGrid::with_copies`]
     fn from(grid: &'a Grid) -> Self {
         let (_, max_y) = grid.max_coords();
 
@@ -67,26 +74,42 @@ impl<'a> From<&'a Grid> for ExpandedGrid<'a> {
 }
 
 impl<'a> ExpandedGrid<'a> {
+    /// Return a new wrapper with different tiling
+    fn with_copies(&self, copies_y: usize, copies_x: usize) -> ExpandedGrid<'a> {
+        ExpandedGrid {
+            grid: self.grid,
+            sub_grid_height: self.sub_grid_height,
+            copies_y,
+            copies_x,
+        }
+    }
+
+    /// The number of cells in the grid
     fn len(&self) -> usize {
         self.grid.len() * self.copies_y * self.copies_x
     }
 
+    /// The total width of the grid
     fn width(&self) -> usize {
         self.grid.width * self.copies_x
     }
 
+    /// The co-ordinates of the bottom right corner of the grid in (y, x) format
     fn max_coords(&self) -> (usize, usize) {
         ((self.len() - 1) / self.width(), self.width() - 1)
     }
 
+    /// Find the meta-co-ordinates of the tile a cell co-ordinate is on
     fn tile_coords(&self, y: usize, x: usize) -> (usize, usize) {
         (y / self.sub_grid_height, x / self.grid.width)
     }
 
+    /// Translate a grid-levey co-ordinates to the sub-grid co-ordinates, i.e. the co-ordinates within the current tile.
     fn sub_grid_coords(&self, y: usize, x: usize) -> (usize, usize) {
         (y % self.sub_grid_height, x % self.grid.width)
     }
 
+    /// Turn co-ordinates into the offset in the underlying list of cell values.
     fn pos_of(&self, y: usize, x: usize) -> Option<usize> {
         let (tile_y, tile_x) = self.tile_coords(y, x);
         if tile_y >= self.copies_y || tile_x >= self.copies_x {
@@ -101,6 +124,8 @@ impl<'a> ExpandedGrid<'a> {
             .map(|sub_grid_pos| tile_pos * self.grid.len() + sub_grid_pos)
     }
 
+    /// Given grid co-ordinates, get the value from the referenced cell in the sub-grid, and apply the cost modifier
+    /// based on the tile position.
     fn get(&self, y: usize, x: usize) -> Option<u8> {
         let (tile_y, tile_x) = self.tile_coords(y, x);
         let (sub_grid_y, sub_grid_x) = self.sub_grid_coords(y, x);
@@ -111,10 +136,12 @@ impl<'a> ExpandedGrid<'a> {
 
         self.grid
             .get(sub_grid_y, sub_grid_x)
-            // + offset based on tile Manhattan distance
+            // + offset based on tile Manhattan distance - note this overflows to 1 not 0
             .map(|v| (((v as usize - 1) + tile_y + tile_x) % 9) as u8 + 1)
     }
 
+    //noinspection DuplicatedCode
+    /// Copied from grid, but needs to use the [`ExpandedGrid::get_relative`] to manage crossing tile boundaries
     fn get_orthogonal_surrounds(&self, y: usize, x: usize) -> Vec<((usize, usize), u8)> {
         [(-1, 0), (0, 1), (1, 0), (0, -1)] // N E S W
             .iter()
@@ -122,6 +149,8 @@ impl<'a> ExpandedGrid<'a> {
             .collect()
     }
 
+    //noinspection DuplicatedCode
+    /// Copied from grid, but needs to use the [`ExpandedGrid::get`] to manage crossing tile boundaries
     fn get_relative(
         &self,
         y: usize,
@@ -158,6 +187,9 @@ pub fn run() {
     println!("The cost to traverse the grid tiles is: {:?}", cost2);
 }
 
+/// Implement Dijkstra's shortest path algorithm. Copied from [`BinaryHeap`] example and modified to get the edge
+/// costs from the provided grid. Originally accepted  [`Grid`] but it was easier to use one type/method for both parts
+/// and the [`ExpandedGrid`] works the same as a [`Grid`] if it only has one tile on each axis.
 fn find_shortest_path(
     grid: &ExpandedGrid,
     start: (usize, usize),

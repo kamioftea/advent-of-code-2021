@@ -5,9 +5,9 @@
 //! slowed down in the x direction (drag) and increased in the -ve y direction due to gravity.
 //!
 //! The first part could just be solved with maths [`highest_point`]. The second part I just brute
-//! force calculated all permutations within upper and lower bounds for x [`all_trajectories`].
-//! Working out a lower bound for x was interesting, but it doesn't save much time over just using
-//! 1.
+//! force calculated all permutations within upper and lower bounds for x and y,
+//! [`all_trajectories`]. Working out a lower bound for x was interesting, but it doesn't save much
+//! time over just using 1.
 
 use std::collections::HashSet;
 use std::fs;

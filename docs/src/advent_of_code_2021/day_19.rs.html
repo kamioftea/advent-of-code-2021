@@ -538,6 +538,8 @@
 <span id="538">538</span>
 <span id="539">539</span>
 <span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 19 - _Beacon Scanner_](https://adventofcode.com/2021/day/19)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today was horrible. I find 3D geometry really hard as I can&#39;t visualise it very well, and that hinders me</span>
@@ -564,7 +566,9 @@
 
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
 
+<span class="doccomment">/// Type alias for a 3D co-ordinate, used for beacon and scanner offsets.</span>
 <span class="kw">type</span> <span class="ident">Position</span> <span class="op">=</span> (<span class="ident">isize</span>, <span class="ident">isize</span>, <span class="ident">isize</span>);
+<span class="doccomment">/// Type alias for the data set of one scanner. A list of the relative positions of all beacons the scanner can detect.</span>
 <span class="kw">type</span> <span class="ident">Scanner</span> <span class="op">=</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Position</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// The entry point for running the solutions with the &#39;real&#39; puzzle input.</span>

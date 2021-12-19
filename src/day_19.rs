@@ -1,6 +1,23 @@
 //! This is my solution for [Advent of Code - Day 19 - _Beacon Scanner_](https://adventofcode.com/2021/day/19)
 //!
+//! Today was horrible. I find 3D geometry really hard as I can't visualise it very well, and that hinders me
+//! reasoning about it. It was a very similar puzzle last year that caused me to stall, so I'm very glad I worked
+//! through this one and got to a solution. It is not very efficient, it takes 1s-1.5s to run which is a lot given
+//! all previous days run in ~300-400ms combined. But I don't think I have a decent enough idea how to improve it
+//! that I'm just happy to have solved it and will take the speed hit.
 //!
+//! [`parse_scanners`] is fairly simple, it splits the input on the double line breaks between scanner inputs, and
+//! for each then returns the list of relative beacon co-ordinates. [`try_merge`] does all the heavy lifting, it
+//! takes the set of beacons fixed so far, and a scanner, and tries for each possible rotation to position the
+//! beacons so that there is an overlap of twelve beacons. If it succeeds it merges the translated beacon permissions
+//! into the set of fixed beacons, and returns the offset of the sensor from the first. [`merge_all`] takes the initial
+//! list of scanner inputs, sets the first as the base scanner, fixing all those beacons. Then repeatedly scans the
+//! remaining scanners until it finds one that merges with the current set (using [`try_merge`]). Once found, it
+//! removes that scanner from the list, and stores its offset for solving part two.
+//!
+//! Part one is solved by just taking the length of the set of beacons returned by [`merge_all`]. For part two
+//! [`largest_distance`] takes the set of all scanner offsets, iterates through the pair combinations, mapping each
+//! pair to their manhatten distance, then takes the max of those.
 
 use std::collections::HashSet;
 use std::fs;
@@ -44,14 +61,21 @@ fn parse_scanners(input: &String) -> Vec<Scanner> {
         .collect()
 }
 
+/// Expand a scanner into each of the 24 possible rotations. I started off trying to build the set of rotation
+/// functions as a static vector of closures that could be cached using `lazy_static!` but I was wasting too much
+/// time trying to satisfy the compiler so ended up with this mess as I inlined the 6 valid combinations for each ±x,
+/// ±y permutation.
 fn rotations(scanner: &Scanner) -> Vec<Scanner> {
     let signs = Vec::from([-1isize, 1isize]);
     signs
         .clone()
         .iter()
         .cartesian_product(signs)
+        // For each of the 4 ±x,±y pairs, the z can only have one sign - the other sign mirrors the set.
         .flat_map(|(&sign_x, sign_y)| {
             let sign_z = if sign_x == sign_y { 1 } else { -1 };
+
+            // It was easier to type them out using multiple carets than use matrices
             Vec::from([
                 scanner
                     .iter()
@@ -82,8 +106,17 @@ fn rotations(scanner: &Scanner) -> Vec<Scanner> {
         .collect()
 }
 
+/// Explode the scanner into its 24 rotations, then for each, pair each up with every element in the fixed beacon set,
+/// and work out the position delta needed to make them match up. If we can find 12 or more point pairs that share the
+/// same delta, that delta gives a translation for the current rotation that has enough overlap to be confident that
+/// is is a match. Take the first rotation (if any) that produces a match. If a match is found, apply that delta to the
+/// current rotation of the scanner data, and merge those points with the existing fixed set. Then return the delta
+/// as that is also the scanner position. [Itertools::cartesian_product], [`Itertools::counts`], and
+/// [`Iterator::find_map`] respectively do the pairing of scanner points with the existing beacon set, grouping by
+/// delta, and finding the first match (if any) both for the rotations, and delta groups.
 fn try_merge(beacon_set: &mut HashSet<Position>, scanner: &Scanner) -> Option<Position> {
     let rots = rotations(&scanner);
+    // Find a rotation with overlap
     let maybe_match = rots.iter().find_map(|scanner| {
         beacon_set
             .iter()
@@ -94,6 +127,7 @@ fn try_merge(beacon_set: &mut HashSet<Position>, scanner: &Scanner) -> Option<Po
             .find_map(|(&k, &v)| if v >= 12 { Some((scanner, k)) } else { None })
     });
 
+    // Insert it into the existing beacon set
     if let Some((scanner, (dx, dy, dz))) = maybe_match {
         scanner
             .iter()
@@ -107,22 +141,36 @@ fn try_merge(beacon_set: &mut HashSet<Position>, scanner: &Scanner) -> Option<Po
     }
 }
 
+/// Use the first scanner as the base set, and repeatedly hunt for scanners that can be merged until the relative
+/// positions of all of them has been determined, Return the set of beacons that results in, and the list of scanner
+/// offsets. Note the order of the scanner list doesn't matter so the more efficient [`Vec::swap_remove`] can be used.
 fn merge_all(scanners: &Vec<Scanner>) -> (HashSet<Position>, HashSet<Position>) {
+    // Make a mutable copy so that scanners can be removed as they're matched
     let mut to_merge = scanners.clone();
+    // Seed the set of beacons from the first scanner dataset
     let mut beacon_set: HashSet<Position> = to_merge.swap_remove(0).iter().map(|&a| a).collect();
-    let mut scanner_pos: HashSet<Position> = HashSet::new();
+    // The first scanner is the reference point, so is at the origin by definition.
+    let mut scanner_pos: HashSet<Position> = HashSet::from([(0, 0, 0)]);
+    // find_map again to search for any one scanner that can be combined with the current set.
     while let Some((i, pos)) = to_merge
         .iter()
+        // track which scanner we're at to allow removing the correct one
         .enumerate()
+        // try merge will mutate the set if it finds a match
         .find_map(|(i, scanner)| try_merge(&mut beacon_set, scanner).map(|pos| (i, pos)))
     {
+        // remove the scanner from the pending list
         to_merge.swap_remove(i);
+        // keep the offset for use in part two
         scanner_pos.insert(pos);
     }
 
+    // return the datasets needed to calculate each part's result.
     (beacon_set, scanner_pos)
 }
 
+/// Take the set of scanner offsets returned by [`merge_all`], explode into all combinations of pairs with
+/// [`Itertools::tuple_combinations`], map those to the manhattan distance, and take the maximum.
 fn largest_distance(scanner_positions: &HashSet<Position>) -> usize {
     scanner_positions
         .iter()

@@ -540,6 +540,9 @@
 <span id="540">540</span>
 <span id="541">541</span>
 <span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 19 - _Beacon Scanner_](https://adventofcode.com/2021/day/19)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today was horrible. I find 3D geometry really hard as I can&#39;t visualise it very well, and that hinders me</span>
@@ -586,13 +589,16 @@
     );
 }
 
+<span class="doccomment">/// Split the input on the double line breaks between scanner inputs, and for each then builds the list of relative</span>
+<span class="doccomment">/// beacon co-ordinates.</span>
 <span class="kw">fn</span> <span class="ident">parse_scanners</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Scanner</span><span class="op">&gt;</span> {
     <span class="ident">input</span>
         .<span class="ident">split</span>(<span class="string">&quot;\n\n&quot;</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">scanner</span><span class="op">|</span> {
             <span class="ident">scanner</span>
                 .<span class="ident">lines</span>()
-                .<span class="ident">skip</span>(<span class="number">1</span>) <span class="comment">// header</span>
+                <span class="comment">// Ignore the `--- scanner x ---` header line</span>
+                .<span class="ident">skip</span>(<span class="number">1</span>)
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> {
                     <span class="kw">let</span> <span class="ident">coords</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line</span>
                         .<span class="ident">split</span>(<span class="string">&quot;,&quot;</span>)

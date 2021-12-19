@@ -24,7 +24,9 @@ use std::fs;
 
 use itertools::Itertools;
 
+/// Type alias for a 3D co-ordinate, used for beacon and scanner offsets.
 type Position = (isize, isize, isize);
+/// Type alias for the data set of one scanner. A list of the relative positions of all beacons the scanner can detect.
 type Scanner = Vec<Position>;
 
 /// The entry point for running the solutions with the 'real' puzzle input.

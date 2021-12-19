@@ -44,13 +44,16 @@ pub fn run() {
     );
 }
 
+/// Split the input on the double line breaks between scanner inputs, and for each then builds the list of relative
+/// beacon co-ordinates.
 fn parse_scanners(input: &String) -> Vec<Scanner> {
     input
         .split("\n\n")
         .map(|scanner| {
             scanner
                 .lines()
-                .skip(1) // header
+                // Ignore the `--- scanner x ---` header line
+                .skip(1)
                 .map(|line| {
                     let coords: Vec<isize> = line
                         .split(",")

@@ -1,6 +1,6 @@
 //! This is my solution for [Advent of Code - Day 18 - _Title_](https://adventofcode.com/2021/day/18)
 //!
-//!
+//! https://github.com/InfinityByTen/AoC-2021/blob/main/day18/src/main.rs
 
 use itertools::Itertools;
 use std::fs;
@@ -193,7 +193,18 @@ mod tests {
     fn can_explode() {
         let mut sfn = SnailfishNumber::from("[[[[[9,8],1],2],3],4]");
         assert_eq!(sfn.check_depth(0), Some((9, 0)));
-        assert_eq!(sfn, SnailfishNumber::from("[[[[0,9],2],3],4]"))
+        assert_eq!(sfn, SnailfishNumber::from("[[[[0,9],2],3],4]"));
+
+        let mut sfn = SnailfishNumber::from("[[6,[5,[4,[3,2]]]],1]");
+        assert_eq!(sfn.check_depth(0), Some((0, 0)));
+        assert_eq!(sfn, SnailfishNumber::from("[[6,[5,[7,0]]],3]"));
+
+        let mut sfn = SnailfishNumber::from("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
+        assert_eq!(sfn.check_depth(0), Some((0, 0)));
+        assert_eq!(
+            sfn,
+            SnailfishNumber::from("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")
+        );
     }
 
     #[test]

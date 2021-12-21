@@ -106,8 +106,9 @@ fn is_hit(
 ///
 /// The lower bound for y, and the upper bound for x is the trajectory that hits the bottom right of
 /// the target area after it's first step. As noted in [`highest_point`] the highest positive y
-/// trajectory is -_target_y_min - 1. The lowest x needs to be large enough that it reaches
-/// target_x_min before decaying to a delta of 0.
+/// trajectory is `-target_y_min - 1` so that on it's way back down it will hit the x-axis, then the
+/// gravity will adjust the speed downwards 1 so that it hits target_y_min next. The lowest x needs
+/// to be large enough that it reaches target_x_min before decaying to a delta of 0.
 ///
 /// so:
 /// ```text

@@ -1,0 +1,1174 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;day_22.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>day_22.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../advent_of_code_2021/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+</pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 22 - _Reactor Reboot_](https://adventofcode.com/2021/day/22)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Today was about toggling cubes of cells in a 3d grid. Part one limited this to a cubic volume</span>
+<span class="doccomment">//! 101 units³, but the puzzle input and description was very heavily hinting that part two was the</span>
+<span class="doccomment">//! same, but using all the data, making it vastly bigger. The program would take a long time to</span>
+<span class="doccomment">//! flip all the required bits, and likely run out of memory trying to represent each cell, so I was</span>
+<span class="doccomment">//! looking for some form of optimisation. I though about tracking for a cube which sections had</span>
+<span class="doccomment">//! been taken out / added in but that got pretty convoluted to track which cube was responsible for</span>
+<span class="doccomment">//! tracking each bit.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This meant I needed a solution that guaranteed each cell was covered by</span>
+<span class="doccomment">//! exactly one cuboid. So I decided upon when a new cube intersects with existing active (on)</span>
+<span class="doccomment">//! cubes, explode the old cubes into up to 6 pieces, (slice of x on both sides, then y on both</span>
+<span class="doccomment">//! sides, then z on both sides), so that none of them intersect with the new cube or each other.</span>
+<span class="doccomment">//! Then if the new cube is on, also add it to the list of cubes.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This could still get to a very large list of cubes, but in reality most cubes will only cause a</span>
+<span class="doccomment">//! small number to explode. The puzzle input in full mode ends up as ~3.5k cubes. The solution then</span>
+<span class="doccomment">//! becomes bounded by the relatively small number of instructions, and is independent of the</span>
+<span class="doccomment">//! grid-size, which is key to it running small and fast enough.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! [`Cuboid`] is used to track each cuboid, and [`Instruction`] wraps a cuboid and whether it flips</span>
+<span class="doccomment">//! its contents to on or off. [`Instruction::from`] parses a line of input, and [`parse_input`]</span>
+<span class="doccomment">//! uses this to build the whole instruction list. [`volume_active`] is the entry point into the</span>
+<span class="doccomment">//! solution for both parts. It folds each instruction into a list of &#39;on&#39; cubes calling</span>
+<span class="doccomment">//! [`merge_instruction`] to build each iteration from the previous iteration and the next</span>
+<span class="doccomment">//! instruction. In turn, this uses [`Cuboid::diff_and_split`] for each existing cube, which returns</span>
+<span class="doccomment">//! a list of cubes to add to the next generation.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! For part one, the instruction list is first filtered by [`limit_instructions`] to only</span>
+<span class="doccomment">//! the instructions with cuboids (or partial cuboids) that fit in [`initialisation_limit`]. For</span>
+<span class="doccomment">//! part two, the unaltered instruction set is used. Both [`Cuboid::diff_and_split`] and</span>
+<span class="doccomment">//! [`limit_instructions`] use [`Cuboid::intersect`] which returns the cuboid region where both</span>
+<span class="doccomment">//! overlap, or `None` if they are disjoint.</span>
+
+<span class="kw">use</span> <span class="ident">std::fs</span>;
+
+<span class="doccomment">/// Represents a cuboid as its range of co-ordinates on each axis. Both values are inclusive.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Cuboid</span> {
+    <span class="ident">x_min</span>: <span class="ident">isize</span>,
+    <span class="ident">x_max</span>: <span class="ident">isize</span>,
+    <span class="ident">y_min</span>: <span class="ident">isize</span>,
+    <span class="ident">y_max</span>: <span class="ident">isize</span>,
+    <span class="ident">z_min</span>: <span class="ident">isize</span>,
+    <span class="ident">z_max</span>: <span class="ident">isize</span>,
+}
+
+<span class="doccomment">/// The initialisation phase (part_one) is limited to a cube 50 units from the origin on all axes.</span>
+<span class="kw">fn</span> <span class="ident">initialisation_limit</span>() -&gt; <span class="ident">Cuboid</span> {
+    <span class="ident">Cuboid::new</span>(<span class="op">-</span><span class="number">50</span>, <span class="number">50</span>, <span class="op">-</span><span class="number">50</span>, <span class="number">50</span>, <span class="op">-</span><span class="number">50</span>, <span class="number">50</span>)
+}
+
+<span class="doccomment">/// Represents a line of input as the [`Cuboid`] region it intersects, and whether it toggles its</span>
+<span class="doccomment">/// contents on or off.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Instruction</span> {
+    <span class="ident">is_on</span>: <span class="ident">bool</span>,
+    <span class="ident">cuboid</span>: <span class="ident">Cuboid</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Instruction</span> {
+    <span class="doccomment">/// Parse a line of the puzzle input as an [`Instruction`]</span>
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">on_off</span>, <span class="ident">coords</span>)) <span class="op">=</span> <span class="ident">line</span>.<span class="ident">split_once</span>(<span class="string">&quot; &quot;</span>) {
+            <span class="kw">let</span> <span class="ident">is_on</span> <span class="op">=</span> <span class="ident">on_off</span> <span class="op">==</span> <span class="string">&quot;on&quot;</span>;
+            <span class="kw">let</span> <span class="ident">numbers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">coords</span>
+                .<span class="ident">split</span>(<span class="kw-2">&amp;</span>[<span class="string">&#39;=&#39;</span>, <span class="string">&#39;.&#39;</span>, <span class="string">&#39;,&#39;</span>][..])
+                .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>().<span class="ident">ok</span>())
+                .<span class="ident">collect</span>();
+            <span class="ident">Instruction</span> {
+                <span class="ident">is_on</span>,
+                <span class="ident">cuboid</span>: <span class="ident">Cuboid::new</span>(
+                    <span class="ident">numbers</span>[<span class="number">0</span>], <span class="ident">numbers</span>[<span class="number">1</span>], <span class="ident">numbers</span>[<span class="number">2</span>], <span class="ident">numbers</span>[<span class="number">3</span>], <span class="ident">numbers</span>[<span class="number">4</span>], <span class="ident">numbers</span>[<span class="number">5</span>],
+                ),
+            }
+        } <span class="kw">else</span> {
+            <span class="macro">panic!</span>(<span class="string">&quot;invalid cuboid {}&quot;</span>, <span class="ident">line</span>)
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Instruction</span> {
+    <span class="doccomment">/// Utility for creating expected outcomes when testing</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">is_on</span>: <span class="ident">bool</span>,
+        <span class="ident">x_min</span>: <span class="ident">isize</span>,
+        <span class="ident">x_max</span>: <span class="ident">isize</span>,
+        <span class="ident">y_min</span>: <span class="ident">isize</span>,
+        <span class="ident">y_max</span>: <span class="ident">isize</span>,
+        <span class="ident">z_min</span>: <span class="ident">isize</span>,
+        <span class="ident">z_max</span>: <span class="ident">isize</span>,
+    ) -&gt; <span class="ident">Instruction</span> {
+        <span class="ident">Instruction</span> {
+            <span class="ident">is_on</span>,
+            <span class="ident">cuboid</span>: <span class="ident">Cuboid::new</span>(<span class="ident">x_min</span>, <span class="ident">x_max</span>, <span class="ident">y_min</span>, <span class="ident">y_max</span>, <span class="ident">z_min</span>, <span class="ident">z_max</span>),
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Cuboid</span> {
+    <span class="doccomment">/// Utility so that a Cuboid can be created on a single line (struct literals are always</span>
+    <span class="doccomment">/// split into multilines by rust-fmt)</span>
+    <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">x_min</span>: <span class="ident">isize</span>,
+        <span class="ident">x_max</span>: <span class="ident">isize</span>,
+        <span class="ident">y_min</span>: <span class="ident">isize</span>,
+        <span class="ident">y_max</span>: <span class="ident">isize</span>,
+        <span class="ident">z_min</span>: <span class="ident">isize</span>,
+        <span class="ident">z_max</span>: <span class="ident">isize</span>,
+    ) -&gt; <span class="ident">Cuboid</span> {
+        <span class="ident">Cuboid</span> {
+            <span class="ident">x_min</span>,
+            <span class="ident">x_max</span>,
+            <span class="ident">y_min</span>,
+            <span class="ident">y_max</span>,
+            <span class="ident">z_min</span>,
+            <span class="ident">z_max</span>,
+        }
+    }
+
+    <span class="doccomment">/// Return the [`Cuboid`] region where this and another [`Cuboid`] overlap, if they do.</span>
+    <span class="kw">fn</span> <span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cuboid</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Cuboid</span><span class="op">&gt;</span> {
+        <span class="comment">// For each axis take the largest minimum, and the smallest maximum as the intersection</span>
+        <span class="kw">let</span> <span class="ident">x_min</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">x_min</span>.<span class="ident">max</span>(<span class="ident">other</span>.<span class="ident">x_min</span>);
+        <span class="kw">let</span> <span class="ident">x_max</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">x_max</span>.<span class="ident">min</span>(<span class="ident">other</span>.<span class="ident">x_max</span>);
+        <span class="kw">let</span> <span class="ident">y_min</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">y_min</span>.<span class="ident">max</span>(<span class="ident">other</span>.<span class="ident">y_min</span>);
+        <span class="kw">let</span> <span class="ident">y_max</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">y_max</span>.<span class="ident">min</span>(<span class="ident">other</span>.<span class="ident">y_max</span>);
+        <span class="kw">let</span> <span class="ident">z_min</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">z_min</span>.<span class="ident">max</span>(<span class="ident">other</span>.<span class="ident">z_min</span>);
+        <span class="kw">let</span> <span class="ident">z_max</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">z_max</span>.<span class="ident">min</span>(<span class="ident">other</span>.<span class="ident">z_max</span>);
+
+        <span class="comment">// If all three axes have at least some overlap - there is an intersection</span>
+        <span class="kw">if</span> <span class="ident">x_min</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">x_max</span> <span class="op">&amp;&amp;</span> <span class="ident">y_min</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">y_max</span> <span class="op">&amp;&amp;</span> <span class="ident">z_min</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">z_max</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">Cuboid</span> {
+                <span class="ident">x_min</span>,
+                <span class="ident">x_max</span>,
+                <span class="ident">y_min</span>,
+                <span class="ident">y_max</span>,
+                <span class="ident">z_min</span>,
+                <span class="ident">z_max</span>,
+            })
+        } <span class="kw">else</span> {
+            <span class="prelude-val">None</span>
+        }
+    }
+
+    <span class="doccomment">/// If there is an overlap with the incoming [`Cuboid`], return a list of [`Cuboid`] slices that</span>
+    <span class="doccomment">/// do not that do not intersect, if any. If there is no intersection return this cube,</span>
+    <span class="doccomment">/// unaffected.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// E.g. in 2D do the following</span>
+    <span class="doccomment">/// ```text</span>
+    <span class="doccomment">/// -----------------          self.dff_and_split(&amp;other);</span>
+    <span class="doccomment">/// | self          |</span>
+    <span class="doccomment">/// |   ---------   |</span>
+    <span class="doccomment">/// |   | other |   |</span>
+    <span class="doccomment">/// |   ---------   |</span>
+    <span class="doccomment">/// |               |</span>
+    <span class="doccomment">/// -----------------</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ----| |-------| |----      First split on the x axis creating rectangles  </span>
+    <span class="doccomment">/// | l | |       | | r |      left and right with their x bounds set to just</span>
+    <span class="doccomment">/// | e | |-------| | i |      outside the intersecting region.</span>
+    <span class="doccomment">/// | f | | other | | g |</span>
+    <span class="doccomment">/// | t | |-------| | h |</span>
+    <span class="doccomment">/// |   | |       | | t |</span>
+    <span class="doccomment">/// ----| |-------| |----</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///       ----------</span>
+    <span class="doccomment">///       |  top   |</span>
+    <span class="doccomment">/// ----| ---------- |----     Then split on the y-axis creating rectangles   </span>
+    <span class="doccomment">/// | l |            | r |     top and bottom. Their y bounds set to just</span>
+    <span class="doccomment">/// | e | ---------- | i |     outside the intersecting region, but their x</span>
+    <span class="doccomment">/// | f | | other  | | g |     bounds are the same as the intersecting region&#39;s</span>
+    <span class="doccomment">/// | t | ---------- | h |     so that they don&#39;t overlap left and right at the</span>
+    <span class="doccomment">/// |   |            | t |     corners</span>
+    <span class="doccomment">/// ----| ---------- |----</span>
+    <span class="doccomment">///       | bottom |</span>
+    <span class="doccomment">///       ----------</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///       ----------</span>
+    <span class="doccomment">///       |  top   |</span>
+    <span class="doccomment">/// ----| ---------- |----      Just return the slices from self. Other will</span>
+    <span class="doccomment">/// | l |            | r |      only be added to the next iteration if it is</span>
+    <span class="doccomment">/// | e |            | i |      &#39;on&#39;, which is done elsewhere.</span>
+    <span class="doccomment">/// | f |            | g |      </span>
+    <span class="doccomment">/// | t |            | h |</span>
+    <span class="doccomment">/// |   |            | t |</span>
+    <span class="doccomment">/// ----| ---------- |----</span>
+    <span class="doccomment">///       | bottom |</span>
+    <span class="doccomment">///       ----------</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note: Not all slices always get returned e.g. a corner intersect</span>
+    <span class="doccomment">/// just creates two slices.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///                                        -----            -----</span>
+    <span class="doccomment">///                                        |top|            |top|</span>
+    <span class="doccomment">/// ---------|      ----| |----      ----| -----      ----| -----                   </span>
+    <span class="doccomment">/// |  self  |      | L | |   |      | L |            | L |  </span>
+    <span class="doccomment">/// |   -------- =&gt; |   | |------ =&gt; |   | ------- =&gt; |   |</span>
+    <span class="doccomment">/// ----|other |    |---| |other|    ----| |other|    ----|</span>
+    <span class="doccomment">///     --------          |------          |------         </span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// The above is expanded to three dimensions, but the logic is the same.</span>
+    <span class="kw">fn</span> <span class="ident">diff_and_split</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cuboid</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cuboid</span><span class="op">&gt;</span> {
+        <span class="doccomment">/// Is there an intersection</span>
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">intersect</span>(<span class="ident">other</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">diff</span>) =&gt; {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">splits</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+                <span class="comment">// lower x-axis slice</span>
+                <span class="kw">if</span> <span class="ident">diff</span>.<span class="ident">x_min</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">x_min</span> {
+                    <span class="ident">splits</span>.<span class="ident">push</span>(<span class="ident">Cuboid::new</span>(
+                        <span class="self">self</span>.<span class="ident">x_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">x_min</span> <span class="op">-</span> <span class="number">1</span>,
+                        <span class="self">self</span>.<span class="ident">y_min</span>,
+                        <span class="self">self</span>.<span class="ident">y_max</span>,
+                        <span class="self">self</span>.<span class="ident">z_min</span>,
+                        <span class="self">self</span>.<span class="ident">z_max</span>,
+                    ))
+                }
+                <span class="comment">// upper x-axis slice</span>
+                <span class="kw">if</span> <span class="ident">diff</span>.<span class="ident">x_max</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">x_max</span> {
+                    <span class="ident">splits</span>.<span class="ident">push</span>(<span class="ident">Cuboid::new</span>(
+                        <span class="ident">diff</span>.<span class="ident">x_max</span> <span class="op">+</span> <span class="number">1</span>,
+                        <span class="self">self</span>.<span class="ident">x_max</span>,
+                        <span class="self">self</span>.<span class="ident">y_min</span>,
+                        <span class="self">self</span>.<span class="ident">y_max</span>,
+                        <span class="self">self</span>.<span class="ident">z_min</span>,
+                        <span class="self">self</span>.<span class="ident">z_max</span>,
+                    ))
+                }
+                <span class="comment">// lower y-axis slice</span>
+                <span class="kw">if</span> <span class="ident">diff</span>.<span class="ident">y_min</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">y_min</span> {
+                    <span class="ident">splits</span>.<span class="ident">push</span>(<span class="ident">Cuboid::new</span>(
+                        <span class="ident">diff</span>.<span class="ident">x_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">x_max</span>,
+                        <span class="self">self</span>.<span class="ident">y_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">y_min</span> <span class="op">-</span> <span class="number">1</span>,
+                        <span class="self">self</span>.<span class="ident">z_min</span>,
+                        <span class="self">self</span>.<span class="ident">z_max</span>,
+                    ))
+                }
+                <span class="comment">// upper y-axis slice</span>
+                <span class="kw">if</span> <span class="ident">diff</span>.<span class="ident">y_max</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">y_max</span> {
+                    <span class="ident">splits</span>.<span class="ident">push</span>(<span class="ident">Cuboid::new</span>(
+                        <span class="ident">diff</span>.<span class="ident">x_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">x_max</span>,
+                        <span class="ident">diff</span>.<span class="ident">y_max</span> <span class="op">+</span> <span class="number">1</span>,
+                        <span class="self">self</span>.<span class="ident">y_max</span>,
+                        <span class="self">self</span>.<span class="ident">z_min</span>,
+                        <span class="self">self</span>.<span class="ident">z_max</span>,
+                    ))
+                }
+                <span class="comment">// lower z-axis slice</span>
+                <span class="kw">if</span> <span class="ident">diff</span>.<span class="ident">z_min</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">z_min</span> {
+                    <span class="ident">splits</span>.<span class="ident">push</span>(<span class="ident">Cuboid::new</span>(
+                        <span class="ident">diff</span>.<span class="ident">x_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">x_max</span>,
+                        <span class="ident">diff</span>.<span class="ident">y_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">y_max</span>,
+                        <span class="self">self</span>.<span class="ident">z_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">z_min</span> <span class="op">-</span> <span class="number">1</span>,
+                    ))
+                }
+                <span class="comment">// upper z-axis slice</span>
+                <span class="kw">if</span> <span class="ident">diff</span>.<span class="ident">z_max</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">z_max</span> {
+                    <span class="ident">splits</span>.<span class="ident">push</span>(<span class="ident">Cuboid::new</span>(
+                        <span class="ident">diff</span>.<span class="ident">x_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">x_max</span>,
+                        <span class="ident">diff</span>.<span class="ident">y_min</span>,
+                        <span class="ident">diff</span>.<span class="ident">y_max</span>,
+                        <span class="ident">diff</span>.<span class="ident">z_max</span> <span class="op">+</span> <span class="number">1</span>,
+                        <span class="self">self</span>.<span class="ident">z_max</span>,
+                    ))
+                }
+                <span class="comment">// could be empty if other cuboid covers the entirety of this cuboids region.</span>
+                <span class="ident">splits</span>
+            }
+            <span class="comment">// No intersection, this cuboid remains covering the same region</span>
+            <span class="prelude-val">None</span> =&gt; <span class="ident">Vec::from</span>([<span class="self">self</span>.<span class="ident">clone</span>()]),
+        }
+    }
+
+    <span class="doccomment">/// Calculates the volume of this [`Cuboid`]. Note the +1s because both limits are inclusive.</span>
+    <span class="kw">fn</span> <span class="ident">volume</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">isize</span> {
+        (<span class="self">self</span>.<span class="ident">x_max</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">x_min</span> <span class="op">+</span> <span class="number">1</span>)
+            <span class="op">*</span> (<span class="self">self</span>.<span class="ident">y_max</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">y_min</span> <span class="op">+</span> <span class="number">1</span>)
+            <span class="op">*</span> (<span class="self">self</span>.<span class="ident">z_max</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">z_min</span> <span class="op">+</span> <span class="number">1</span>)
+    }
+}
+
+<span class="doccomment">/// The entry point for running the solutions with the &#39;real&#39; puzzle input.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// - The puzzle input is expected to be at `&lt;project_root&gt;/res/day-22-input`</span>
+<span class="doccomment">/// - It is expected this will be called by [`super::main()`] when the user elects to run day 22.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>() {
+    <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;res/day-22-input&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Failed to read file&quot;</span>);
+    <span class="kw">let</span> <span class="ident">instructions</span> <span class="op">=</span> <span class="ident">parse_input</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>);
+    <span class="kw">let</span> <span class="ident">part_one_instructions</span> <span class="op">=</span> <span class="ident">limit_instructions</span>(<span class="kw-2">&amp;</span><span class="ident">instructions</span>, <span class="ident">initialisation_limit</span>());
+    <span class="macro">println!</span>(
+        <span class="string">&quot;There are {} cubes active in the initialisation procedure&quot;</span>,
+        <span class="ident">volume_active</span>(<span class="kw-2">&amp;</span><span class="ident">part_one_instructions</span>)
+    );
+
+    <span class="macro">println!</span>(
+        <span class="string">&quot;There are {} cubes active in the full reactor&quot;</span>,
+        <span class="ident">volume_active</span>(<span class="kw-2">&amp;</span><span class="ident">instructions</span>)
+    );
+}
+
+<span class="doccomment">/// Parse the puzzle input as a list of instructions</span>
+<span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> {
+    <span class="ident">input</span>.<span class="ident">lines</span>().<span class="ident">map</span>(<span class="ident">Instruction::from</span>).<span class="ident">collect</span>()
+}
+
+<span class="doccomment">/// Merge an instruction into the current list of cuboids. Use [`Cuboid::diff_and_split`] to remove</span>
+<span class="doccomment">/// the instruction&#39;s cuboid from other cuboids it overlaps. Then if it is itself on, add the new</span>
+<span class="doccomment">/// cuboid to the list to mark that its entire region is now active.</span>
+<span class="kw">fn</span> <span class="ident">merge_instruction</span>(<span class="ident">instruction</span>: <span class="ident">Instruction</span>, <span class="ident">cuboids</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cuboid</span><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cuboid</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_cuboids</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+
+    <span class="ident">cuboids</span>
+        .<span class="ident">iter</span>()
+        .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">cuboid</span><span class="op">|</span> <span class="ident">cuboid</span>.<span class="ident">diff_and_split</span>(<span class="kw-2">&amp;</span><span class="ident">instruction</span>.<span class="ident">cuboid</span>))
+        .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">cuboid</span><span class="op">|</span> <span class="ident">new_cuboids</span>.<span class="ident">push</span>(<span class="ident">cuboid</span>));
+
+    <span class="kw">if</span> <span class="ident">instruction</span>.<span class="ident">is_on</span> {
+        <span class="ident">new_cuboids</span>.<span class="ident">push</span>(<span class="ident">instruction</span>.<span class="ident">cuboid</span>)
+    }
+
+    <span class="ident">new_cuboids</span>
+}
+
+<span class="doccomment">/// Fold the list of instructions into a list of cuboids that describe the entire active area, then</span>
+<span class="doccomment">/// sum the volumes of those cuboids to get the total active volume.</span>
+<span class="kw">fn</span> <span class="ident">volume_active</span>(<span class="ident">instructions</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span>) -&gt; <span class="ident">isize</span> {
+    <span class="ident">instructions</span>
+        .<span class="ident">iter</span>()
+        .<span class="ident">fold</span>(<span class="ident">Vec::new</span>(), <span class="op">|</span><span class="ident">acc</span>, <span class="kw-2">&amp;</span><span class="ident">inst</span><span class="op">|</span> <span class="ident">merge_instruction</span>(<span class="ident">inst</span>, <span class="kw-2">&amp;</span><span class="ident">acc</span>))
+        .<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">volume</span>())
+        .<span class="ident">sum</span>()
+}
+
+<span class="doccomment">/// Filter the list of instructions to just the region that intersects the limit [`Cuboid`]. If an</span>
+<span class="doccomment">/// instruction&#39;s cuboid is partially in the area, instead include a modified instruction that just</span>
+<span class="doccomment">/// contains the intersection with the limit.</span>
+<span class="kw">fn</span> <span class="ident">limit_instructions</span>(<span class="ident">instructions</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span>, <span class="ident">limit</span>: <span class="ident">Cuboid</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> {
+    <span class="ident">instructions</span>
+        .<span class="ident">iter</span>()
+        .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">inst</span><span class="op">|</span> {
+            <span class="ident">limit</span>.<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">inst</span>.<span class="ident">cuboid</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">cuboid</span><span class="op">|</span> <span class="ident">Instruction</span> {
+                <span class="ident">is_on</span>: <span class="ident">inst</span>.<span class="ident">is_on</span>,
+                <span class="ident">cuboid</span>,
+            })
+        })
+        .<span class="ident">collect</span>()
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_22</span>::{
+        <span class="ident">initialisation_limit</span>, <span class="ident">limit_instructions</span>, <span class="ident">merge_instruction</span>, <span class="ident">parse_input</span>, <span class="ident">volume_active</span>,
+        <span class="ident">Cuboid</span>, <span class="ident">Instruction</span>,
+    };
+
+    <span class="kw">fn</span> <span class="ident">sample_instructions</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> {
+        <span class="ident">Vec::from</span>([
+            <span class="ident">Instruction::new</span>(<span class="bool-val">true</span>, <span class="number">10</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">12</span>),
+            <span class="ident">Instruction::new</span>(<span class="bool-val">true</span>, <span class="number">11</span>, <span class="number">13</span>, <span class="number">11</span>, <span class="number">13</span>, <span class="number">11</span>, <span class="number">13</span>),
+            <span class="ident">Instruction::new</span>(<span class="bool-val">false</span>, <span class="number">9</span>, <span class="number">11</span>, <span class="number">9</span>, <span class="number">11</span>, <span class="number">9</span>, <span class="number">11</span>),
+            <span class="ident">Instruction::new</span>(<span class="bool-val">true</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>),
+        ])
+    }
+
+    <span class="kw">fn</span> <span class="ident">large_sample</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;on x=-5..47,y=-31..22,z=-19..33
+on x=-44..5,y=-27..21,z=-14..35
+on x=-49..-1,y=-11..42,z=-10..38
+on x=-20..34,y=-40..6,z=-44..1
+off x=26..39,y=40..50,z=-2..11
+on x=-41..5,y=-41..6,z=-36..8
+off x=-43..-33,y=-45..-28,z=7..25
+on x=-33..15,y=-32..19,z=-34..11
+off x=35..47,y=-46..-34,z=-11..5
+on x=-14..36,y=-6..44,z=-16..29
+on x=-57795..-6158,y=29564..72030,z=20435..90618
+on x=36731..105352,y=-21140..28532,z=16094..90401
+on x=30999..107136,y=-53464..15513,z=8553..71215
+on x=13528..83982,y=-99403..-27377,z=-24141..23996
+on x=-72682..-12347,y=18159..111354,z=7391..80950
+on x=-1060..80757,y=-65301..-20884,z=-103788..-16709
+on x=-83015..-9461,y=-72160..-8347,z=-81239..-26856
+on x=-52752..22273,y=-49450..9096,z=54442..119054
+on x=-29982..40483,y=-108474..-28371,z=-24328..38471
+on x=-4958..62750,y=40422..118853,z=-7672..65583
+on x=55694..108686,y=-43367..46958,z=-26781..48729
+on x=-98497..-18186,y=-63569..3412,z=1232..88485
+on x=-726..56291,y=-62629..13224,z=18033..85226
+on x=-110886..-34664,y=-81338..-8658,z=8914..63723
+on x=-55829..24974,y=-16897..54165,z=-121762..-28058
+on x=-65152..-11147,y=22489..91432,z=-58782..1780
+on x=-120100..-32970,y=-46592..27473,z=-11695..61039
+on x=-18631..37533,y=-124565..-50804,z=-35667..28308
+on x=-57817..18248,y=49321..117703,z=5745..55881
+on x=14781..98692,y=-1341..70827,z=15753..70151
+on x=-34419..55919,y=-19626..40991,z=39015..114138
+on x=-60785..11593,y=-56135..2999,z=-95368..-26915
+on x=-32178..58085,y=17647..101866,z=-91405..-8878
+on x=-53655..12091,y=50097..105568,z=-75335..-4862
+on x=-111166..-40997,y=-71714..2688,z=5609..50954
+on x=-16602..70118,y=-98693..-44401,z=5197..76897
+on x=16383..101554,y=4615..83635,z=-44907..18747
+off x=-95822..-15171,y=-19987..48940,z=10804..104439
+on x=-89813..-14614,y=16069..88491,z=-3297..45228
+on x=41075..99376,y=-20427..49978,z=-52012..13762
+on x=-21330..50085,y=-17944..62733,z=-112280..-30197
+on x=-16478..35915,y=36008..118594,z=-7885..47086
+off x=-98156..-27851,y=-49952..43171,z=-99005..-8456
+off x=2032..69770,y=-71013..4824,z=7471..94418
+on x=43670..120875,y=-42068..12382,z=-24787..38892
+off x=37514..111226,y=-45862..25743,z=-16714..54663
+off x=25699..97951,y=-30668..59918,z=-15349..69697
+off x=-44271..17935,y=-9516..60759,z=49131..112598
+on x=-61695..-5813,y=40978..94975,z=8655..80240
+off x=-101086..-9439,y=-7088..67543,z=33935..83858
+off x=18020..114017,y=-48931..32606,z=21474..89843
+off x=-77139..10506,y=-89994..-18797,z=-80..59318
+off x=8476..79288,y=-75520..11602,z=-96624..-24783
+on x=-47488..-1262,y=24338..100707,z=16292..72967
+off x=-84341..13987,y=2429..92914,z=-90671..-1318
+off x=-37810..49457,y=-71013..-7894,z=-105357..-13188
+off x=-27365..46395,y=31009..98017,z=15428..76570
+off x=-70369..-16548,y=22648..78696,z=-1892..86821
+on x=-53470..21291,y=-120233..-33476,z=-44150..38147
+off x=-93533..-4276,y=-16170..68771,z=-104985..-24507&quot;</span>
+            .<span class="ident">to_string</span>();
+
+        <span class="ident">parse_input</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_parse</span>() {
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;on x=10..12,y=10..12,z=10..12
+on x=11..13,y=11..13,z=11..13
+off x=9..11,y=9..11,z=9..11
+on x=10..10,y=10..10,z=10..10&quot;</span>
+            .<span class="ident">to_string</span>();
+
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">sample_instructions</span>();
+
+        <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">parse_input</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>);
+
+        <span class="macro">assert_eq!</span>(<span class="ident">actual</span>.<span class="ident">len</span>(), <span class="ident">expected</span>.<span class="ident">len</span>());
+        <span class="ident">actual</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">zip</span>(<span class="ident">expected</span>)
+            .<span class="ident">for_each</span>(<span class="op">|</span>(<span class="kw-2">&amp;</span><span class="ident">act</span>, <span class="ident">exp</span>)<span class="op">|</span> <span class="macro">assert_eq!</span>(<span class="ident">act</span>, <span class="ident">exp</span>));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_intersect</span>() {
+        <span class="kw">let</span> <span class="ident">cuboids</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cuboid</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">sample_instructions</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">cuboid</span>).<span class="ident">collect</span>();
+
+        <span class="macro">assert_eq!</span>(<span class="ident">cuboids</span>[<span class="number">0</span>].<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">cuboids</span>[<span class="number">3</span>]), <span class="prelude-val">Some</span>(<span class="ident">cuboids</span>[<span class="number">3</span>]));
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">cuboids</span>[<span class="number">0</span>].<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">cuboids</span>[<span class="number">1</span>]),
+            <span class="prelude-val">Some</span>(<span class="ident">Cuboid::new</span>(<span class="number">11</span>, <span class="number">12</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">11</span>, <span class="number">12</span>))
+        );
+        <span class="macro">assert_eq!</span>(<span class="ident">cuboids</span>[<span class="number">1</span>].<span class="ident">intersect</span>(<span class="kw-2">&amp;</span><span class="ident">cuboids</span>[<span class="number">3</span>]), <span class="prelude-val">None</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_diff_and_split</span>() {
+        <span class="kw">let</span> <span class="ident">cuboids</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cuboid</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">sample_instructions</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">cuboid</span>).<span class="ident">collect</span>();
+
+        <span class="kw">let</span> <span class="ident">expected1</span> <span class="op">=</span> <span class="ident">Vec::from</span>([
+            <span class="ident">Cuboid::new</span>(<span class="number">11</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">12</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">12</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">12</span>),
+        ]);
+        <span class="macro">assert_eq!</span>(<span class="ident">cuboids</span>[<span class="number">0</span>].<span class="ident">diff_and_split</span>(<span class="kw-2">&amp;</span><span class="ident">cuboids</span>[<span class="number">3</span>]), <span class="ident">expected1</span>);
+
+        <span class="kw">let</span> <span class="ident">expected2</span> <span class="op">=</span> <span class="ident">Vec::from</span>([<span class="ident">cuboids</span>[<span class="number">1</span>]]);
+        <span class="macro">assert_eq!</span>(<span class="ident">cuboids</span>[<span class="number">1</span>].<span class="ident">diff_and_split</span>(<span class="kw-2">&amp;</span><span class="ident">cuboids</span>[<span class="number">3</span>]), <span class="ident">expected2</span>);
+
+        <span class="kw">let</span> <span class="ident">expected3</span> <span class="op">=</span> <span class="ident">Vec::from</span>([
+            <span class="ident">Cuboid::new</span>(<span class="number">9</span>, <span class="number">9</span>, <span class="number">9</span>, <span class="number">11</span>, <span class="number">9</span>, <span class="number">11</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">11</span>, <span class="number">11</span>, <span class="number">9</span>, <span class="number">11</span>, <span class="number">9</span>, <span class="number">11</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">9</span>, <span class="number">9</span>, <span class="number">9</span>, <span class="number">11</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">11</span>, <span class="number">9</span>, <span class="number">11</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">9</span>, <span class="number">9</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">11</span>),
+        ]);
+        <span class="macro">assert_eq!</span>(<span class="ident">cuboids</span>[<span class="number">2</span>].<span class="ident">diff_and_split</span>(<span class="kw-2">&amp;</span><span class="ident">cuboids</span>[<span class="number">3</span>]), <span class="ident">expected3</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">cuboids</span>[<span class="number">0</span>].<span class="ident">diff_and_split</span>(<span class="kw-2">&amp;</span><span class="ident">cuboids</span>[<span class="number">0</span>]), <span class="ident">Vec::new</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_merge_instruction</span>() {
+        <span class="kw">let</span> <span class="ident">instructions</span> <span class="op">=</span> <span class="ident">sample_instructions</span>();
+
+        <span class="kw">let</span> <span class="ident">pass1</span> <span class="op">=</span> <span class="ident">merge_instruction</span>(<span class="ident">instructions</span>[<span class="number">0</span>], <span class="kw-2">&amp;</span><span class="ident">Vec::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">pass1</span>, <span class="ident">Vec::from</span>([<span class="ident">instructions</span>[<span class="number">0</span>].<span class="ident">cuboid</span>]));
+
+        <span class="kw">let</span> <span class="ident">pass2</span> <span class="op">=</span> <span class="ident">merge_instruction</span>(<span class="ident">instructions</span>[<span class="number">1</span>], <span class="kw-2">&amp;</span><span class="ident">pass1</span>);
+        <span class="kw">let</span> <span class="ident">expected2</span> <span class="op">=</span> <span class="ident">Vec::from</span>([
+            <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">12</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">11</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">12</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">11</span>, <span class="number">12</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">10</span>),
+            <span class="ident">Cuboid::new</span>(<span class="number">11</span>, <span class="number">13</span>, <span class="number">11</span>, <span class="number">13</span>, <span class="number">11</span>, <span class="number">13</span>),
+        ]);
+        <span class="macro">assert_eq!</span>(<span class="ident">pass2</span>, <span class="ident">expected2</span>);
+
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">merge_instruction</span>(<span class="ident">instructions</span>[<span class="number">2</span>], <span class="kw-2">&amp;</span><span class="ident">Vec::from</span>([<span class="ident">instructions</span>[<span class="number">3</span>].<span class="ident">cuboid</span>])),
+            <span class="ident">Vec::new</span>()
+        );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_calc_volume</span>() {
+        <span class="kw">let</span> <span class="ident">volumes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">sample_instructions</span>()
+            .<span class="ident">iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">cuboid</span>.<span class="ident">volume</span>())
+            .<span class="ident">collect</span>();
+        <span class="macro">assert_eq!</span>(<span class="ident">volumes</span>, <span class="ident">Vec::from</span>([<span class="number">27</span>, <span class="number">27</span>, <span class="number">27</span>, <span class="number">1</span>]));
+        <span class="macro">assert_eq!</span>(<span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">12</span>, <span class="number">10</span>, <span class="number">12</span>).<span class="ident">volume</span>(), <span class="number">9</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">9</span>, <span class="number">12</span>).<span class="ident">volume</span>(), <span class="number">8</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_sum_active_volumes</span>() {
+        <span class="macro">assert_eq!</span>(<span class="ident">volume_active</span>(<span class="kw-2">&amp;</span><span class="ident">sample_instructions</span>()), <span class="number">39</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">volume_active</span>(<span class="kw-2">&amp;</span><span class="ident">large_sample</span>()), <span class="number">2758514936282235</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_limit</span>() {
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">limit_instructions</span>(<span class="kw-2">&amp;</span><span class="ident">sample_instructions</span>(), <span class="ident">Cuboid::new</span>(<span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>)),
+            <span class="ident">Vec::from</span>([
+                <span class="ident">Instruction::new</span>(<span class="bool-val">true</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>),
+                <span class="ident">Instruction::new</span>(<span class="bool-val">false</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>),
+                <span class="ident">Instruction::new</span>(<span class="bool-val">true</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">10</span>),
+            ])
+        )
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">can_sum_active_volumes_with_limit</span>() {
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;on x=-20..26,y=-36..17,z=-47..7
+on x=-20..33,y=-21..23,z=-26..28
+on x=-22..28,y=-29..23,z=-38..16
+on x=-46..7,y=-6..46,z=-50..-1
+on x=-49..1,y=-3..46,z=-24..28
+on x=2..47,y=-22..22,z=-23..27
+on x=-27..23,y=-28..26,z=-21..29
+on x=-39..5,y=-6..47,z=-3..44
+on x=-30..21,y=-8..43,z=-13..34
+on x=-22..26,y=-27..20,z=-29..19
+off x=-48..-32,y=26..41,z=-47..-37
+on x=-12..35,y=6..50,z=-50..-2
+off x=-48..-32,y=-32..-16,z=-15..-5
+on x=-18..26,y=-33..15,z=-7..46
+off x=-40..-22,y=-38..-28,z=23..41
+on x=-16..35,y=-41..10,z=-47..6
+off x=-32..-23,y=11..30,z=-14..3
+on x=-49..-5,y=-3..45,z=-29..18
+off x=18..30,y=-20..-8,z=-3..13
+on x=-41..9,y=-7..43,z=-33..15
+on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
+on x=967..23432,y=45373..81175,z=27513..53682&quot;</span>
+            .<span class="ident">to_string</span>();
+
+        <span class="kw">let</span> <span class="ident">instructions</span> <span class="op">=</span> <span class="ident">limit_instructions</span>(<span class="kw-2">&amp;</span><span class="ident">parse_input</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>), <span class="ident">initialisation_limit</span>());
+
+        <span class="macro">assert_eq!</span>(<span class="ident">volume_active</span>(<span class="kw-2">&amp;</span><span class="ident">instructions</span>), <span class="number">590784</span>);
+        <span class="macro">assert_eq!</span>(
+            <span class="ident">volume_active</span>(<span class="kw-2">&amp;</span><span class="ident">limit_instructions</span>(<span class="kw-2">&amp;</span><span class="ident">large_sample</span>(), <span class="ident">initialisation_limit</span>())),
+            <span class="number">474140</span>
+        );
+    }
+}
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
+</body></html>

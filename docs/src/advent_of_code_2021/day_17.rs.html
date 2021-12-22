@@ -307,6 +307,7 @@
 <span id="307">307</span>
 <span id="308">308</span>
 <span id="309">309</span>
+<span id="310">310</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 17 - _Trick Shot_](https://adventofcode.com/2021/day/17)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today involved quite a bit of maths, and some brute-force looping through possible results. The</span>
@@ -336,6 +337,7 @@
     );
 }
 
+<span class="doccomment">/// Define a target area in the form `((x_min, x_max), (y_min, y_max))`</span>
 <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> ((<span class="ident">isize</span>, <span class="ident">isize</span>), (<span class="ident">isize</span>, <span class="ident">isize</span>));
 
 <span class="doccomment">/// This is mostly discarding the unwanted syntax that makes this readable to humans.</span>
@@ -390,12 +392,12 @@
     (<span class="ident">dx</span>, <span class="ident">dy</span>): (<span class="ident">isize</span>, <span class="ident">isize</span>),
     ((<span class="ident">x1</span>, <span class="ident">x2</span>), (<span class="ident">y1</span>, <span class="ident">y2</span>)): <span class="ident">Target</span>,
 ) -&gt; <span class="ident">bool</span> {
-    <span class="comment">// If we&#39;ve gone beyond the area, this was a miss</span>
+    <span class="comment">// If the probe has gone beyond the area, this was a miss</span>
     <span class="kw">if</span> <span class="ident">pos_x</span> <span class="op">&gt;</span> <span class="ident">x2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">pos_y</span> <span class="op">&lt;</span> <span class="ident">y1</span> {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
 
-    <span class="comment">// if the co-ordinates are on or within the target area bounds, this was a miss</span>
+    <span class="comment">// if the co-ordinates are on or within the target area bounds, this was a hit</span>
     <span class="kw">if</span> <span class="ident">pos_x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">x1</span> <span class="op">&amp;&amp;</span> <span class="ident">pos_x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">x2</span> <span class="op">&amp;&amp;</span> <span class="ident">pos_y</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">y1</span> <span class="op">&amp;&amp;</span> <span class="ident">pos_y</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">y2</span> {
         <span class="kw">return</span> <span class="bool-val">true</span>;
     }

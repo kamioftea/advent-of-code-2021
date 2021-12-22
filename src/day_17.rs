@@ -27,6 +27,7 @@ pub fn run() {
     );
 }
 
+/// Define a target area in the form `((x_min, x_max), (y_min, y_max))`
 type Target = ((isize, isize), (isize, isize));
 
 /// This is mostly discarding the unwanted syntax that makes this readable to humans.
@@ -81,12 +82,12 @@ fn is_hit(
     (dx, dy): (isize, isize),
     ((x1, x2), (y1, y2)): Target,
 ) -> bool {
-    // If we've gone beyond the area, this was a miss
+    // If the probe has gone beyond the area, this was a miss
     if pos_x > x2 || pos_y < y1 {
         return false;
     }
 
-    // if the co-ordinates are on or within the target area bounds, this was a miss
+    // if the co-ordinates are on or within the target area bounds, this was a hit
     if pos_x >= x1 && pos_x <= x2 && pos_y >= y1 && pos_y <= y2 {
         return true;
     }

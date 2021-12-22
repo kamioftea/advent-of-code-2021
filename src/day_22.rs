@@ -1,9 +1,41 @@
 //! This is my solution for [Advent of Code - Day 22 - _Reactor Reboot_](https://adventofcode.com/2021/day/22)
 //!
+//! Today was about toggling cubes of cells in a 3d grid. Part one limited this to a cubic volume
+//! 101 units³, but the puzzle input and description was very heavily hinting that part two was the
+//! same, but using all the data, making it vastly bigger. The program would take a long time to
+//! flip all the required bits, and likely run out of memory trying to represent each cell, so I was
+//! looking for some form of optimisation. I though about tracking for a cube which sections had
+//! been taken out / added in but that got pretty convoluted to track which cube was responsible for
+//! tracking each bit.
 //!
+//! This meant I needed a solution that guaranteed each cell was covered by
+//! exactly one cuboid. So I decided upon when a new cube intersects with existing active (on)
+//! cubes, explode the old cubes into up to 6 pieces, (slice of x on both sides, then y on both
+//! sides, then z on both sides), so that none of them intersect with the new cube or each other.
+//! Then if the new cube is on, also add it to the list of cubes.
+//!
+//! This could still get to a very large list of cubes, but in reality most cubes will only cause a
+//! small number to explode. The puzzle input in full mode ends up as ~3.5k cubes. The solution then
+//! becomes bounded by the relatively small number of instructions, and is independent of the
+//! grid-size, which is key to it running small and fast enough.
+//!
+//! [`Cuboid`] is used to track each cuboid, and [`Instruction`] wraps a cuboid and whether it flips
+//! its contents to on or off. [`Instruction::from`] parses a line of input, and [`parse_input`]
+//! uses this to build the whole instruction list. [`volume_active`] is the entry point into the
+//! solution for both parts. It folds each instruction into a list of 'on' cubes calling
+//! [`merge_instruction`] to build each iteration from the previous iteration and the next
+//! instruction. In turn, this uses [`Cuboid::diff_and_split`] for each existing cube, which returns
+//! a list of cubes to add to the next generation.
+//!
+//! For part one, the instruction list is first filtered by [`limit_instructions`] to only
+//! the instructions with cuboids (or partial cuboids) that fit in [`initialisation_limit`]. For
+//! part two, the unaltered instruction set is used. Both [`Cuboid::diff_and_split`] and
+//! [`limit_instructions`] use [`Cuboid::intersect`] which returns the cuboid region where both
+//! overlap, or `None` if they are disjoint.
 
 use std::fs;
 
+/// Represents a cuboid as its range of co-ordinates on each axis. Both values are inclusive.
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 struct Cuboid {
     x_min: isize,
@@ -14,10 +46,13 @@ struct Cuboid {
     z_max: isize,
 }
 
-fn part_one_limit() -> Cuboid {
+/// The initialisation phase (part_one) is limited to a cube 50 units from the origin on all axes.
+fn initialisation_limit() -> Cuboid {
     Cuboid::new(-50, 50, -50, 50, -50, 50)
 }
 
+/// Represents a line of input as the [`Cuboid`] region it intersects, and whether it toggles its
+/// contents on or off.
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 struct Instruction {
     is_on: bool,
@@ -25,6 +60,7 @@ struct Instruction {
 }
 
 impl From<&str> for Instruction {
+    /// Parse a line of the puzzle input as an [`Instruction`]
     fn from(line: &str) -> Self {
         if let Some((on_off, coords)) = line.split_once(" ") {
             let is_on = on_off == "on";
@@ -45,6 +81,7 @@ impl From<&str> for Instruction {
 }
 
 impl Instruction {
+    /// Utility for creating expected outcomes when testing
     #[cfg(test)]
     fn new(
         is_on: bool,
@@ -63,6 +100,8 @@ impl Instruction {
 }
 
 impl Cuboid {
+    /// Utility so that a Cuboid can be created on a single line (struct literals are always
+    /// split into multilines by rust-fmt)
     fn new(
         x_min: isize,
         x_max: isize,
@@ -81,7 +120,9 @@ impl Cuboid {
         }
     }
 
-    fn intersects(&self, other: &Cuboid) -> Option<Cuboid> {
+    /// Return the [`Cuboid`] region where this and another [`Cuboid`] overlap, if they do.
+    fn intersect(&self, other: &Cuboid) -> Option<Cuboid> {
+        // For each axis take the largest minimum, and the smallest maximum as the intersection
         let x_min = self.x_min.max(other.x_min);
         let x_max = self.x_max.min(other.x_max);
         let y_min = self.y_min.max(other.y_min);
@@ -89,6 +130,7 @@ impl Cuboid {
         let z_min = self.z_min.max(other.z_min);
         let z_max = self.z_max.min(other.z_max);
 
+        // If all three axes have at least some overlap - there is an intersection
         if x_min <= x_max && y_min <= y_max && z_min <= z_max {
             Some(Cuboid {
                 x_min,
@@ -103,10 +145,70 @@ impl Cuboid {
         }
     }
 
+    /// If there is an overlap with the incoming [`Cuboid`], return a list of [`Cuboid`] slices that
+    /// do not that do not intersect, if any. If there is no intersection return this cube,
+    /// unaffected.
+    ///
+    /// E.g. in 2D do the following
+    /// ```text
+    /// -----------------          self.dff_and_split(&other);
+    /// | self          |
+    /// |   ---------   |
+    /// |   | other |   |
+    /// |   ---------   |
+    /// |               |
+    /// -----------------
+    ///
+    /// ----| |-------| |----      First split on the x axis creating rectangles  
+    /// | l | |       | | r |      left and right with their x bounds set to just
+    /// | e | |-------| | i |      outside the intersecting region.
+    /// | f | | other | | g |
+    /// | t | |-------| | h |
+    /// |   | |       | | t |
+    /// ----| |-------| |----
+    ///
+    ///       ----------
+    ///       |  top   |
+    /// ----| ---------- |----     Then split on the y-axis creating rectangles   
+    /// | l |            | r |     top and bottom. Their y bounds set to just
+    /// | e | ---------- | i |     outside the intersecting region, but their x
+    /// | f | | other  | | g |     bounds are the same as the intersecting region's
+    /// | t | ---------- | h |     so that they don't overlap left and right at the
+    /// |   |            | t |     corners
+    /// ----| ---------- |----
+    ///       | bottom |
+    ///       ----------
+    ///
+    ///       ----------
+    ///       |  top   |
+    /// ----| ---------- |----      Just return the slices from self. Other will
+    /// | l |            | r |      only be added to the next iteration if it is
+    /// | e |            | i |      'on', which is done elsewhere.
+    /// | f |            | g |      
+    /// | t |            | h |
+    /// |   |            | t |
+    /// ----| ---------- |----
+    ///       | bottom |
+    ///       ----------
+    ///
+    /// Note: Not all slices always get returned e.g. a corner intersect
+    /// just creates two slices.
+    ///
+    ///                                        -----            -----
+    ///                                        |top|            |top|
+    /// ---------|      ----| |----      ----| -----      ----| -----                   
+    /// |  self  |      | L | |   |      | L |            | L |  
+    /// |   -------- => |   | |------ => |   | ------- => |   |
+    /// ----|other |    |---| |other|    ----| |other|    ----|
+    ///     --------          |------          |------         
+    /// ```
+    /// The above is expanded to three dimensions, but the logic is the same.
     fn diff_and_split(&self, other: &Cuboid) -> Vec<Cuboid> {
-        match self.intersects(other) {
+        /// Is there an intersection
+        match self.intersect(other) {
             Some(diff) => {
                 let mut splits = Vec::new();
+                // lower x-axis slice
                 if diff.x_min > self.x_min {
                     splits.push(Cuboid::new(
                         self.x_min,
@@ -117,6 +219,7 @@ impl Cuboid {
                         self.z_max,
                     ))
                 }
+                // upper x-axis slice
                 if diff.x_max < self.x_max {
                     splits.push(Cuboid::new(
                         diff.x_max + 1,
@@ -127,6 +230,7 @@ impl Cuboid {
                         self.z_max,
                     ))
                 }
+                // lower y-axis slice
                 if diff.y_min > self.y_min {
                     splits.push(Cuboid::new(
                         diff.x_min,
@@ -137,6 +241,7 @@ impl Cuboid {
                         self.z_max,
                     ))
                 }
+                // upper y-axis slice
                 if diff.y_max < self.y_max {
                     splits.push(Cuboid::new(
                         diff.x_min,
@@ -147,6 +252,7 @@ impl Cuboid {
                         self.z_max,
                     ))
                 }
+                // lower z-axis slice
                 if diff.z_min > self.z_min {
                     splits.push(Cuboid::new(
                         diff.x_min,
@@ -157,6 +263,7 @@ impl Cuboid {
                         diff.z_min - 1,
                     ))
                 }
+                // upper z-axis slice
                 if diff.z_max < self.z_max {
                     splits.push(Cuboid::new(
                         diff.x_min,
@@ -167,13 +274,15 @@ impl Cuboid {
                         self.z_max,
                     ))
                 }
-
+                // could be empty if other cuboid covers the entirety of this cuboids region.
                 splits
             }
+            // No intersection, this cuboid remains covering the same region
             None => Vec::from([self.clone()]),
         }
     }
 
+    /// Calculates the volume of this [`Cuboid`]. Note the +1s because both limits are inclusive.
     fn volume(&self) -> isize {
         (self.x_max - self.x_min + 1)
             * (self.y_max - self.y_min + 1)
@@ -188,7 +297,7 @@ impl Cuboid {
 pub fn run() {
     let contents = fs::read_to_string("res/day-22-input").expect("Failed to read file");
     let instructions = parse_input(&contents);
-    let part_one_instructions = limit_instructions(&instructions, part_one_limit());
+    let part_one_instructions = limit_instructions(&instructions, initialisation_limit());
     println!(
         "There are {} cubes active in the initialisation procedure",
         volume_active(&part_one_instructions)
@@ -200,10 +309,14 @@ pub fn run() {
     );
 }
 
+/// Parse the puzzle input as a list of instructions
 fn parse_input(input: &String) -> Vec<Instruction> {
     input.lines().map(Instruction::from).collect()
 }
 
+/// Merge an instruction into the current list of cuboids. Use [`Cuboid::diff_and_split`] to remove
+/// the instruction's cuboid from other cuboids it overlaps. Then if it is itself on, add the new
+/// cuboid to the list to mark that its entire region is now active.
 fn merge_instruction(instruction: Instruction, cuboids: &Vec<Cuboid>) -> Vec<Cuboid> {
     let mut new_cuboids = Vec::new();
 
@@ -219,6 +332,8 @@ fn merge_instruction(instruction: Instruction, cuboids: &Vec<Cuboid>) -> Vec<Cub
     new_cuboids
 }
 
+/// Fold the list of instructions into a list of cuboids that describe the entire active area, then
+/// sum the volumes of those cuboids to get the total active volume.
 fn volume_active(instructions: &Vec<Instruction>) -> isize {
     instructions
         .iter()
@@ -228,11 +343,14 @@ fn volume_active(instructions: &Vec<Instruction>) -> isize {
         .sum()
 }
 
+/// Filter the list of instructions to just the region that intersects the limit [`Cuboid`]. If an
+/// instruction's cuboid is partially in the area, instead include a modified instruction that just
+/// contains the intersection with the limit.
 fn limit_instructions(instructions: &Vec<Instruction>, limit: Cuboid) -> Vec<Instruction> {
     instructions
         .iter()
         .flat_map(|inst| {
-            limit.intersects(&inst.cuboid).map(|cuboid| Instruction {
+            limit.intersect(&inst.cuboid).map(|cuboid| Instruction {
                 is_on: inst.is_on,
                 cuboid,
             })
@@ -243,8 +361,8 @@ fn limit_instructions(instructions: &Vec<Instruction>, limit: Cuboid) -> Vec<Ins
 #[cfg(test)]
 mod tests {
     use crate::day_22::{
-        limit_instructions, merge_instruction, parse_input, part_one_limit, volume_active, Cuboid,
-        Instruction,
+        initialisation_limit, limit_instructions, merge_instruction, parse_input, volume_active,
+        Cuboid, Instruction,
     };
 
     fn sample_instructions() -> Vec<Instruction> {
@@ -254,6 +372,72 @@ mod tests {
             Instruction::new(false, 9, 11, 9, 11, 9, 11),
             Instruction::new(true, 10, 10, 10, 10, 10, 10),
         ])
+    }
+
+    fn large_sample() -> Vec<Instruction> {
+        let input = "on x=-5..47,y=-31..22,z=-19..33
+on x=-44..5,y=-27..21,z=-14..35
+on x=-49..-1,y=-11..42,z=-10..38
+on x=-20..34,y=-40..6,z=-44..1
+off x=26..39,y=40..50,z=-2..11
+on x=-41..5,y=-41..6,z=-36..8
+off x=-43..-33,y=-45..-28,z=7..25
+on x=-33..15,y=-32..19,z=-34..11
+off x=35..47,y=-46..-34,z=-11..5
+on x=-14..36,y=-6..44,z=-16..29
+on x=-57795..-6158,y=29564..72030,z=20435..90618
+on x=36731..105352,y=-21140..28532,z=16094..90401
+on x=30999..107136,y=-53464..15513,z=8553..71215
+on x=13528..83982,y=-99403..-27377,z=-24141..23996
+on x=-72682..-12347,y=18159..111354,z=7391..80950
+on x=-1060..80757,y=-65301..-20884,z=-103788..-16709
+on x=-83015..-9461,y=-72160..-8347,z=-81239..-26856
+on x=-52752..22273,y=-49450..9096,z=54442..119054
+on x=-29982..40483,y=-108474..-28371,z=-24328..38471
+on x=-4958..62750,y=40422..118853,z=-7672..65583
+on x=55694..108686,y=-43367..46958,z=-26781..48729
+on x=-98497..-18186,y=-63569..3412,z=1232..88485
+on x=-726..56291,y=-62629..13224,z=18033..85226
+on x=-110886..-34664,y=-81338..-8658,z=8914..63723
+on x=-55829..24974,y=-16897..54165,z=-121762..-28058
+on x=-65152..-11147,y=22489..91432,z=-58782..1780
+on x=-120100..-32970,y=-46592..27473,z=-11695..61039
+on x=-18631..37533,y=-124565..-50804,z=-35667..28308
+on x=-57817..18248,y=49321..117703,z=5745..55881
+on x=14781..98692,y=-1341..70827,z=15753..70151
+on x=-34419..55919,y=-19626..40991,z=39015..114138
+on x=-60785..11593,y=-56135..2999,z=-95368..-26915
+on x=-32178..58085,y=17647..101866,z=-91405..-8878
+on x=-53655..12091,y=50097..105568,z=-75335..-4862
+on x=-111166..-40997,y=-71714..2688,z=5609..50954
+on x=-16602..70118,y=-98693..-44401,z=5197..76897
+on x=16383..101554,y=4615..83635,z=-44907..18747
+off x=-95822..-15171,y=-19987..48940,z=10804..104439
+on x=-89813..-14614,y=16069..88491,z=-3297..45228
+on x=41075..99376,y=-20427..49978,z=-52012..13762
+on x=-21330..50085,y=-17944..62733,z=-112280..-30197
+on x=-16478..35915,y=36008..118594,z=-7885..47086
+off x=-98156..-27851,y=-49952..43171,z=-99005..-8456
+off x=2032..69770,y=-71013..4824,z=7471..94418
+on x=43670..120875,y=-42068..12382,z=-24787..38892
+off x=37514..111226,y=-45862..25743,z=-16714..54663
+off x=25699..97951,y=-30668..59918,z=-15349..69697
+off x=-44271..17935,y=-9516..60759,z=49131..112598
+on x=-61695..-5813,y=40978..94975,z=8655..80240
+off x=-101086..-9439,y=-7088..67543,z=33935..83858
+off x=18020..114017,y=-48931..32606,z=21474..89843
+off x=-77139..10506,y=-89994..-18797,z=-80..59318
+off x=8476..79288,y=-75520..11602,z=-96624..-24783
+on x=-47488..-1262,y=24338..100707,z=16292..72967
+off x=-84341..13987,y=2429..92914,z=-90671..-1318
+off x=-37810..49457,y=-71013..-7894,z=-105357..-13188
+off x=-27365..46395,y=31009..98017,z=15428..76570
+off x=-70369..-16548,y=22648..78696,z=-1892..86821
+on x=-53470..21291,y=-120233..-33476,z=-44150..38147
+off x=-93533..-4276,y=-16170..68771,z=-104985..-24507"
+            .to_string();
+
+        parse_input(&input)
     }
 
     #[test]
@@ -279,12 +463,12 @@ on x=10..10,y=10..10,z=10..10"
     fn can_intersect() {
         let cuboids: Vec<Cuboid> = sample_instructions().iter().map(|i| i.cuboid).collect();
 
-        assert_eq!(cuboids[0].intersects(&cuboids[3]), Some(cuboids[3]));
+        assert_eq!(cuboids[0].intersect(&cuboids[3]), Some(cuboids[3]));
         assert_eq!(
-            cuboids[0].intersects(&cuboids[1]),
+            cuboids[0].intersect(&cuboids[1]),
             Some(Cuboid::new(11, 12, 11, 12, 11, 12))
         );
-        assert_eq!(cuboids[1].intersects(&cuboids[3]), None);
+        assert_eq!(cuboids[1].intersect(&cuboids[3]), None);
     }
 
     #[test]
@@ -349,70 +533,7 @@ on x=10..10,y=10..10,z=10..10"
     #[test]
     fn can_sum_active_volumes() {
         assert_eq!(volume_active(&sample_instructions()), 39);
-
-        let large_input = "on x=-5..47,y=-31..22,z=-19..33
-on x=-44..5,y=-27..21,z=-14..35
-on x=-49..-1,y=-11..42,z=-10..38
-on x=-20..34,y=-40..6,z=-44..1
-off x=26..39,y=40..50,z=-2..11
-on x=-41..5,y=-41..6,z=-36..8
-off x=-43..-33,y=-45..-28,z=7..25
-on x=-33..15,y=-32..19,z=-34..11
-off x=35..47,y=-46..-34,z=-11..5
-on x=-14..36,y=-6..44,z=-16..29
-on x=-57795..-6158,y=29564..72030,z=20435..90618
-on x=36731..105352,y=-21140..28532,z=16094..90401
-on x=30999..107136,y=-53464..15513,z=8553..71215
-on x=13528..83982,y=-99403..-27377,z=-24141..23996
-on x=-72682..-12347,y=18159..111354,z=7391..80950
-on x=-1060..80757,y=-65301..-20884,z=-103788..-16709
-on x=-83015..-9461,y=-72160..-8347,z=-81239..-26856
-on x=-52752..22273,y=-49450..9096,z=54442..119054
-on x=-29982..40483,y=-108474..-28371,z=-24328..38471
-on x=-4958..62750,y=40422..118853,z=-7672..65583
-on x=55694..108686,y=-43367..46958,z=-26781..48729
-on x=-98497..-18186,y=-63569..3412,z=1232..88485
-on x=-726..56291,y=-62629..13224,z=18033..85226
-on x=-110886..-34664,y=-81338..-8658,z=8914..63723
-on x=-55829..24974,y=-16897..54165,z=-121762..-28058
-on x=-65152..-11147,y=22489..91432,z=-58782..1780
-on x=-120100..-32970,y=-46592..27473,z=-11695..61039
-on x=-18631..37533,y=-124565..-50804,z=-35667..28308
-on x=-57817..18248,y=49321..117703,z=5745..55881
-on x=14781..98692,y=-1341..70827,z=15753..70151
-on x=-34419..55919,y=-19626..40991,z=39015..114138
-on x=-60785..11593,y=-56135..2999,z=-95368..-26915
-on x=-32178..58085,y=17647..101866,z=-91405..-8878
-on x=-53655..12091,y=50097..105568,z=-75335..-4862
-on x=-111166..-40997,y=-71714..2688,z=5609..50954
-on x=-16602..70118,y=-98693..-44401,z=5197..76897
-on x=16383..101554,y=4615..83635,z=-44907..18747
-off x=-95822..-15171,y=-19987..48940,z=10804..104439
-on x=-89813..-14614,y=16069..88491,z=-3297..45228
-on x=41075..99376,y=-20427..49978,z=-52012..13762
-on x=-21330..50085,y=-17944..62733,z=-112280..-30197
-on x=-16478..35915,y=36008..118594,z=-7885..47086
-off x=-98156..-27851,y=-49952..43171,z=-99005..-8456
-off x=2032..69770,y=-71013..4824,z=7471..94418
-on x=43670..120875,y=-42068..12382,z=-24787..38892
-off x=37514..111226,y=-45862..25743,z=-16714..54663
-off x=25699..97951,y=-30668..59918,z=-15349..69697
-off x=-44271..17935,y=-9516..60759,z=49131..112598
-on x=-61695..-5813,y=40978..94975,z=8655..80240
-off x=-101086..-9439,y=-7088..67543,z=33935..83858
-off x=18020..114017,y=-48931..32606,z=21474..89843
-off x=-77139..10506,y=-89994..-18797,z=-80..59318
-off x=8476..79288,y=-75520..11602,z=-96624..-24783
-on x=-47488..-1262,y=24338..100707,z=16292..72967
-off x=-84341..13987,y=2429..92914,z=-90671..-1318
-off x=-37810..49457,y=-71013..-7894,z=-105357..-13188
-off x=-27365..46395,y=31009..98017,z=15428..76570
-off x=-70369..-16548,y=22648..78696,z=-1892..86821
-on x=-53470..21291,y=-120233..-33476,z=-44150..38147
-off x=-93533..-4276,y=-16170..68771,z=-104985..-24507"
-            .to_string();
-
-        assert_eq!(volume_active(&parse_input(&large_input)), 2758514936282235);
+        assert_eq!(volume_active(&large_sample()), 2758514936282235);
     }
 
     #[test]
@@ -453,8 +574,12 @@ on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
 on x=967..23432,y=45373..81175,z=27513..53682"
             .to_string();
 
-        let instructions = limit_instructions(&parse_input(&input), part_one_limit());
+        let instructions = limit_instructions(&parse_input(&input), initialisation_limit());
 
-        assert_eq!(volume_active(&instructions), 590784)
+        assert_eq!(volume_active(&instructions), 590784);
+        assert_eq!(
+            volume_active(&limit_instructions(&large_sample(), initialisation_limit())),
+            474140
+        );
     }
 }

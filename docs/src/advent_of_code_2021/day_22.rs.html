@@ -579,10 +579,6 @@
 <span id="579">579</span>
 <span id="580">580</span>
 <span id="581">581</span>
-<span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 22 - _Reactor Reboot_](https://adventofcode.com/2021/day/22)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Today was about toggling cubes of cells in a 3d grid. Part one limited this to a cubic volume</span>
@@ -764,32 +760,28 @@
     <span class="doccomment">///       | bottom |</span>
     <span class="doccomment">///       ----------</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">///       ----------</span>
-    <span class="doccomment">///       |  top   |</span>
     <span class="doccomment">/// ----| ---------- |----      Just return the slices from self. Other will</span>
-    <span class="doccomment">/// | l |            | r |      only be added to the next iteration if it is</span>
-    <span class="doccomment">/// | e |            | i |      &#39;on&#39;, which is done elsewhere.</span>
+    <span class="doccomment">/// | l | |  top   | | r |      only be added to the next iteration if it is</span>
+    <span class="doccomment">/// | e | ---------- | i |      &#39;on&#39;, which is done elsewhere.</span>
     <span class="doccomment">/// | f |            | g |      </span>
-    <span class="doccomment">/// | t |            | h |</span>
-    <span class="doccomment">/// |   |            | t |</span>
+    <span class="doccomment">/// | t | ---------- | h |</span>
+    <span class="doccomment">/// |   | | bottom | | t |</span>
     <span class="doccomment">/// ----| ---------- |----</span>
-    <span class="doccomment">///       | bottom |</span>
-    <span class="doccomment">///       ----------</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note: Not all slices always get returned e.g. a corner intersect</span>
     <span class="doccomment">/// just creates two slices.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">///                                        -----            -----</span>
-    <span class="doccomment">///                                        |top|            |top|</span>
+    <span class="doccomment">///                                        -----            </span>
+    <span class="doccomment">///                                        |top|            </span>
     <span class="doccomment">/// ---------|      ----| |----      ----| -----      ----| -----                   </span>
-    <span class="doccomment">/// |  self  |      | L | |   |      | L |            | L |  </span>
-    <span class="doccomment">/// |   -------- =&gt; |   | |------ =&gt; |   | ------- =&gt; |   |</span>
+    <span class="doccomment">/// |  self  |      | L | |   |      | L |            | L | |top|</span>
+    <span class="doccomment">/// |   -------- =&gt; |   | |------ =&gt; |   | ------- =&gt; |   | -----</span>
     <span class="doccomment">/// ----|other |    |---| |other|    ----| |other|    ----|</span>
     <span class="doccomment">///     --------          |------          |------         </span>
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// The above is expanded to three dimensions, but the logic is the same.</span>
     <span class="kw">fn</span> <span class="ident">diff_and_split</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cuboid</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cuboid</span><span class="op">&gt;</span> {
-        <span class="doccomment">/// Is there an intersection</span>
+        <span class="comment">// Is there an intersection?</span>
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">intersect</span>(<span class="ident">other</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">diff</span>) =&gt; {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">splits</span> <span class="op">=</span> <span class="ident">Vec::new</span>();

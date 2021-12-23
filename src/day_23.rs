@@ -113,9 +113,13 @@ impl PartialOrd for State {
 /// - It is expected this will be called by [`super::main()`] when the user elects to run day 23.
 pub fn run() {
     let contents = fs::read_to_string("res/day-23-input").expect("Failed to read file");
-    let _state = parse_input(&contents);
-    // let result = find_shortest_path(&state).unwrap();
-    // println!("Lowest energy is {}", result);
+    let burrow = parse_input(&contents);
+    let result = find_shortest_path(&burrow).unwrap();
+    println!("Lowest energy for small burrow is {}", result);
+
+    let expanded_burrow = expand_burrow(&burrow);
+    let expanded_result = find_shortest_path(&expanded_burrow).unwrap();
+    println!("Lowest energy for expanded burrow is {}", expanded_result);
 }
 
 fn parse_letter(letter: char) -> Option<u128> {
@@ -180,82 +184,98 @@ fn build_goal(depth: usize) -> Burrow {
 
 fn build_states(
     adjacency_map: &HashMap<usize, HashSet<(usize, usize)>>,
-    state: &Burrow,
+    burrow: &Burrow,
 ) -> Vec<(usize, Burrow)> {
     let mut out = Vec::new();
 
-    for i in 0..state.len {
-        let curr = state.get_at(i);
+    for i in 0..7 {
+        let curr = burrow.get_at(i);
         if curr == 0 {
             continue;
         }
         let cost = COSTS[curr as usize];
-        for &(other, dist) in adjacency_map.get(&i).unwrap() {
-            if state.get_at(other) == 0 {
-                out.push((cost * dist, state.swap(i, other)))
+        for &(mut other, mut dist) in adjacency_map.get(&i).unwrap() {
+            if burrow.get_at(other) == 0 {
+                if other > 6 {
+                    let mut next = other + 4;
+                    while next < burrow.len && burrow.get_at(next) == 0 {
+                        other = next;
+                        next += 4;
+                        dist += 1
+                    }
+                }
+                out.push((cost * dist, burrow.swap(i, other)))
             }
         }
     }
 
-    out
+    for i in 0..4 {
+        let mut pos = 7 + i;
+        let mut dist = 2;
+        while pos < burrow.len {
+            let curr = burrow.get_at(pos);
+            if burrow.get_at(pos) != 0 {
+                let cost = COSTS[curr as usize];
+                for j in 1..=2 {
+                    if burrow.get_at(i + j) == 0 {
+                        out.push((cost * dist, burrow.swap(pos, i + j)))
+                    }
+                }
+                break;
+            }
+            pos += 4;
+            dist += 1
+        }
+    }
 
-    // state
-    //     .iter()
-    //     .enumerate()
-    //     .filter(|(_, &pos)| pos != Empty)
-    //     .flat_map(|(i, amphipod)| {
-    //         adjacency_map
-    //             .get(&i)
-    //             .unwrap()
-    //             .iter()
-    //             .filter(|(pos, _)| state[*pos] == Empty)
-    //             .map(move |&(pos, dist)| {
-    //                 let mut new_state = state.clone();
-    //                 new_state.swap(i, pos);
-    //                 (dist * amphipod.cost(), new_state)
-    //             })
-    //     })
-    //     .collect()
+    out
 }
-//
-// fn find_shortest_path(start: &Vec<Amphipod>) -> Option<usize> {
-//     let mut heap: BinaryHeap<State> = BinaryHeap::new();
-//     let mut dist: HashMap<Vec<Amphipod>, usize> = HashMap::new();
-//     let mut visited: HashSet<Vec<Amphipod>> = HashSet::new();
-//
-//     let depth = (start.len() - 7) / 4;
-//     let adjacency_map = adjacency_map(depth);
-//     let goal = build_goal(depth);
-//
-//     dist.insert(start.clone(), 0);
-//     heap.push(State::new(0, start.clone()));
-//
-//     while let Some(State { cost, state }) = heap.pop() {
-//         if state == goal {
-//             return Some(cost);
-//         }
-//
-//         if visited.contains(&state) {
-//             continue;
-//         }
-//         visited.insert(state.clone());
-//
-//         for (energy, next_state) in build_states(&adjacency_map, &state) {
-//             let next_cost = cost + energy;
-//             let entry = dist.entry(next_state.clone()).or_insert(usize::MAX);
-//             if next_cost < *entry {
-//                 heap.push(State::new(next_cost, next_state.clone()));
-//                 *entry = next_cost
-//             }
-//         }
-//     }
-//
-//     None
-// }
+
+fn find_shortest_path(start: &Burrow) -> Option<usize> {
+    let mut heap: BinaryHeap<State> = BinaryHeap::new();
+    let mut dist: HashMap<u128, usize> = HashMap::new();
+
+    let depth = (start.len - 7) / 4;
+    let adjacency_map = adjacency_map(depth);
+    let goal = build_goal(depth);
+
+    dist.insert(start.positions, 0);
+    heap.push(State::new(0, start.clone()));
+
+    while let Some(State { cost, burrow }) = heap.pop() {
+        if burrow == goal {
+            return Some(cost);
+        }
+
+        if cost > *dist.get(&burrow.positions).unwrap() {
+            continue;
+        }
+
+        for (energy, next_burrow) in build_states(&adjacency_map, &burrow) {
+            let next_cost = cost + energy;
+            let curr_cost = dist.get(&next_burrow.positions).unwrap_or(&usize::MAX);
+            if next_cost < *curr_cost {
+                heap.push(State::new(next_cost, next_burrow.clone()));
+                dist.insert(next_burrow.positions, next_cost);
+            }
+        }
+    }
+
+    None
+}
+
+fn expand_burrow(burrow: &Burrow) -> Burrow {
+    let mut as_str = format!("{}", burrow);
+    as_str.insert_str(11, "DCBADBAC");
+    Burrow::from(&as_str)
+}
 
 #[cfg(test)]
 mod tests {
-    use crate::day_23::{adjacency_map, build_goal, build_states, parse_input, Burrow};
+    use crate::day_23::{
+        adjacency_map, build_goal, build_states, expand_burrow, find_shortest_path, parse_input,
+        Burrow,
+    };
     use std::collections::{HashMap, HashSet};
 
     fn sample_start() -> Burrow {
@@ -332,26 +352,38 @@ mod tests {
         ]);
 
         for entry in &actual {
+            println!("{:?}", entry);
             assert!(expected.contains(entry))
         }
         assert_eq!(actual.len(), expected.len());
     }
-    //
-    // #[test]
-    // fn can_calc_shortest_path() {
-    //     assert_eq!(find_shortest_path(&build_state(".A......BCDABCD")), Some(2));
-    //     assert_eq!(
-    //         find_shortest_path(&build_state(".B.....A.CDABCD")),
-    //         Some(40)
-    //     );
-    //     assert_eq!(
-    //         find_shortest_path(&build_state(".C.....AB.DABCD")),
-    //         Some(600)
-    //     );
-    //     assert_eq!(
-    //         find_shortest_path(&build_state(".......BACDABCD")),
-    //         Some(46)
-    //     );
-    //     // assert_eq!(find_shortest_path(&sample_start()), Some(12521));
-    // }
+
+    #[test]
+    fn can_calc_shortest_path() {
+        assert_eq!(
+            find_shortest_path(&Burrow::from(&".A......BCDABCD".to_string())),
+            Some(2)
+        );
+        assert_eq!(
+            find_shortest_path(&Burrow::from(&".B.....A.CDABCD".to_string())),
+            Some(40)
+        );
+        assert_eq!(
+            find_shortest_path(&Burrow::from(&".C.....AB.DABCD".to_string())),
+            Some(600)
+        );
+        assert_eq!(
+            find_shortest_path(&Burrow::from(&".......BACDABCD".to_string())),
+            Some(46)
+        );
+        assert_eq!(find_shortest_path(&sample_start()), Some(12521));
+    }
+
+    #[test]
+    fn can_expand_burrow() {
+        assert_eq!(
+            format!("{}", expand_burrow(&sample_start())),
+            ".......BCBDDCBADBACADCA"
+        )
+    }
 }

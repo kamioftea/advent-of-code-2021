@@ -179,32 +179,28 @@ impl Cuboid {
     ///       | bottom |
     ///       ----------
     ///
-    ///       ----------
-    ///       |  top   |
     /// ----| ---------- |----      Just return the slices from self. Other will
-    /// | l |            | r |      only be added to the next iteration if it is
-    /// | e |            | i |      'on', which is done elsewhere.
+    /// | l | |  top   | | r |      only be added to the next iteration if it is
+    /// | e | ---------- | i |      'on', which is done elsewhere.
     /// | f |            | g |      
-    /// | t |            | h |
-    /// |   |            | t |
+    /// | t | ---------- | h |
+    /// |   | | bottom | | t |
     /// ----| ---------- |----
-    ///       | bottom |
-    ///       ----------
     ///
     /// Note: Not all slices always get returned e.g. a corner intersect
     /// just creates two slices.
     ///
-    ///                                        -----            -----
-    ///                                        |top|            |top|
+    ///                                        -----            
+    ///                                        |top|            
     /// ---------|      ----| |----      ----| -----      ----| -----                   
-    /// |  self  |      | L | |   |      | L |            | L |  
-    /// |   -------- => |   | |------ => |   | ------- => |   |
+    /// |  self  |      | L | |   |      | L |            | L | |top|
+    /// |   -------- => |   | |------ => |   | ------- => |   | -----
     /// ----|other |    |---| |other|    ----| |other|    ----|
     ///     --------          |------          |------         
     /// ```
     /// The above is expanded to three dimensions, but the logic is the same.
     fn diff_and_split(&self, other: &Cuboid) -> Vec<Cuboid> {
-        /// Is there an intersection
+        // Is there an intersection?
         match self.intersect(other) {
             Some(diff) => {
                 let mut splits = Vec::new();

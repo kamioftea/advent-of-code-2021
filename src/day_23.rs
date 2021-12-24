@@ -2,13 +2,12 @@
 //!
 //!
 
-use itertools::Itertools;
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{BinaryHeap, HashMap};
 use std::fmt::{Debug, Display, Formatter};
 use std::fs;
 
-const COSTS: [usize; 5] = [0, 1, 10, 100, 1000];
+const COSTS: [usize; 4] = [1, 10, 100, 1000];
 
 #[derive(Eq, PartialEq, Hash, Ord, PartialOrd, Clone)]
 struct Burrow {
@@ -143,37 +142,6 @@ fn parse_input(input: &String) -> Burrow {
     Burrow { len, positions }
 }
 
-fn adjacency_map(depth: usize) -> HashMap<usize, HashSet<(usize, usize)>> {
-    let mut map: HashMap<usize, HashSet<(usize, usize)>> = HashMap::new();
-
-    (0usize..=6).tuple_windows::<(_, _)>().for_each(|(a, b)| {
-        let cost = if a == 0 || b == 6 { 1usize } else { 2usize };
-        map.entry(a).or_insert(HashSet::new()).insert((b, cost));
-        map.entry(b).or_insert(HashSet::new()).insert((a, cost));
-
-        if cost == 2 && depth > 0 {
-            let c = a + 6;
-            map.entry(a).or_insert(HashSet::new()).insert((c, 2));
-            map.entry(c).or_insert(HashSet::new()).insert((a, 2));
-
-            map.entry(b).or_insert(HashSet::new()).insert((c, 2));
-            map.entry(c).or_insert(HashSet::new()).insert((b, 2));
-        }
-
-        if cost == 2 && depth > 1 {
-            (0..depth)
-                .tuple_windows::<(_, _)>()
-                .map(|(d, e)| (d * 4 + 6 + a, e * 4 + 6 + a))
-                .for_each(|(d, e)| {
-                    map.entry(d).or_insert(HashSet::new()).insert((e, 1));
-                    map.entry(e).or_insert(HashSet::new()).insert((d, 1));
-                })
-        }
-    });
-
-    map
-}
-
 fn build_goal(depth: usize) -> Burrow {
     let len = depth * 4 + 7;
     let row = (1 << 9) + (2 << 6) + (3 << 3) + 4;
@@ -182,31 +150,42 @@ fn build_goal(depth: usize) -> Burrow {
     Burrow { len, positions }
 }
 
-fn build_states(
-    adjacency_map: &HashMap<usize, HashSet<(usize, usize)>>,
-    burrow: &Burrow,
-) -> Vec<(usize, Burrow)> {
+fn build_states(burrow: &Burrow) -> Vec<(usize, Burrow)> {
     let mut out = Vec::new();
 
-    for i in 0..7 {
+    'outer: for i in 0..7 {
         let curr = burrow.get_at(i);
         if curr == 0 {
             continue;
         }
-        let cost = COSTS[curr as usize];
-        for &(mut other, mut dist) in adjacency_map.get(&i).unwrap() {
-            if burrow.get_at(other) == 0 {
-                if other > 6 {
-                    let mut next = other + 4;
-                    while next < burrow.len && burrow.get_at(next) == 0 {
-                        other = next;
-                        next += 4;
-                        dist += 1
-                    }
-                }
-                out.push((cost * dist, burrow.swap(i, other)))
+        let cost = COSTS[curr as usize - 1];
+        let delta: isize = if i <= curr as usize { 1 } else { -1 };
+        let target = if i <= curr as usize { curr } else { curr + 1 };
+        let mut h_pos = i as usize;
+        let mut dist = 1; // corner into room must be travelled
+        while h_pos != target as usize {
+            if [0, 6].contains(&h_pos) {
+                dist += 1
+            } else {
+                dist += 2
+            };
+            h_pos = (h_pos as isize + delta) as usize;
+            if burrow.get_at(h_pos) != 0 {
+                continue 'outer;
             }
         }
+        let mut v_pos = curr as usize + 6;
+        let mut final_pos = v_pos;
+        while v_pos < burrow.len {
+            if burrow.get_at(v_pos) == 0 {
+                final_pos = v_pos;
+                dist += 1
+            } else if burrow.get_at(v_pos) != curr {
+                continue 'outer;
+            }
+            v_pos += 4;
+        }
+        out.push((cost * dist, burrow.swap(i, final_pos)));
     }
 
     for i in 0..4 {
@@ -215,11 +194,23 @@ fn build_states(
         while pos < burrow.len {
             let curr = burrow.get_at(pos);
             if burrow.get_at(pos) != 0 {
-                let cost = COSTS[curr as usize];
-                for j in 1..=2 {
-                    if burrow.get_at(i + j) == 0 {
-                        out.push((cost * dist, burrow.swap(pos, i + j)))
+                let cost = COSTS[curr as usize - 1];
+                let mut left_pos = i + 1;
+                let mut left_dist = 0;
+                while burrow.get_at(left_pos) == 0 {
+                    out.push((cost * (dist + left_dist), burrow.swap(pos, left_pos)));
+                    if left_pos == 0 {
+                        break;
                     }
+                    left_pos -= 1;
+                    left_dist += if left_pos == 0 { 1 } else { 2 };
+                }
+                let mut right_pos = i + 2;
+                let mut right_dist = 0;
+                while right_pos <= 6 && burrow.get_at(right_pos) == 0 {
+                    out.push((cost * (dist + right_dist), burrow.swap(pos, right_pos)));
+                    right_pos += 1;
+                    right_dist += if right_pos == 6 { 1 } else { 2 };
                 }
                 break;
             }
@@ -234,9 +225,9 @@ fn build_states(
 fn find_shortest_path(start: &Burrow) -> Option<usize> {
     let mut heap: BinaryHeap<State> = BinaryHeap::new();
     let mut dist: HashMap<u128, usize> = HashMap::new();
+    let mut from: HashMap<u128, (usize, u128)> = HashMap::new();
 
     let depth = (start.len - 7) / 4;
-    let adjacency_map = adjacency_map(depth);
     let goal = build_goal(depth);
 
     dist.insert(start.positions, 0);
@@ -247,16 +238,17 @@ fn find_shortest_path(start: &Burrow) -> Option<usize> {
             return Some(cost);
         }
 
-        if cost > *dist.get(&burrow.positions).unwrap() {
+        if cost > *dist.get(&burrow.positions).unwrap_or(&usize::MAX) {
             continue;
         }
 
-        for (energy, next_burrow) in build_states(&adjacency_map, &burrow) {
+        for (energy, next_burrow) in build_states(&burrow) {
             let next_cost = cost + energy;
             let curr_cost = dist.get(&next_burrow.positions).unwrap_or(&usize::MAX);
             if next_cost < *curr_cost {
                 heap.push(State::new(next_cost, next_burrow.clone()));
                 dist.insert(next_burrow.positions, next_cost);
+                from.insert(next_burrow.positions, (energy, burrow.positions));
             }
         }
     }
@@ -273,10 +265,9 @@ fn expand_burrow(burrow: &Burrow) -> Burrow {
 #[cfg(test)]
 mod tests {
     use crate::day_23::{
-        adjacency_map, build_goal, build_states, expand_burrow, find_shortest_path, parse_input,
-        Burrow,
+        build_goal, build_states, expand_burrow, find_shortest_path, parse_input, Burrow,
     };
-    use std::collections::{HashMap, HashSet};
+    use std::collections::HashSet;
 
     fn sample_start() -> Burrow {
         Burrow::from(&".......BCBDADCA".to_string())
@@ -304,31 +295,6 @@ mod tests {
     }
 
     #[test]
-    fn can_build_adjacency_map() {
-        let actual = adjacency_map(2);
-        let expected: HashMap<usize, HashSet<(usize, usize)>> = HashMap::from([
-            (0, HashSet::from([(1, 1)])),
-            (1, HashSet::from([(0, 1), (2, 2), (7, 2)])),
-            (2, HashSet::from([(1, 2), (3, 2), (7, 2), (8, 2)])),
-            (3, HashSet::from([(2, 2), (4, 2), (8, 2), (9, 2)])),
-            (4, HashSet::from([(3, 2), (5, 2), (9, 2), (10, 2)])),
-            (5, HashSet::from([(4, 2), (6, 1), (10, 2)])),
-            (6, HashSet::from([(5, 1)])),
-            (7, HashSet::from([(1, 2), (2, 2), (11, 1)])),
-            (8, HashSet::from([(2, 2), (3, 2), (12, 1)])),
-            (9, HashSet::from([(3, 2), (4, 2), (13, 1)])),
-            (10, HashSet::from([(4, 2), (5, 2), (14, 1)])),
-            (11, HashSet::from([(7, 1)])),
-            (12, HashSet::from([(8, 1)])),
-            (13, HashSet::from([(9, 1)])),
-            (14, HashSet::from([(10, 1)])),
-        ]);
-        for i in 0..15 {
-            assert_eq!(actual[&i], expected[&i])
-        }
-    }
-
-    #[test]
     fn can_build_goal() {
         assert_eq!(build_goal(2), Burrow::from(&".......ABCDABCD".to_string()));
         assert_eq!(
@@ -339,23 +305,52 @@ mod tests {
 
     #[test]
     fn can_calc_next_state() {
-        let actual = build_states(&adjacency_map(2), &sample_start());
+        let actual = build_states(&sample_start());
         let expected = HashSet::from([
+            (30, Burrow::from(&"B.......CBDADCA".to_string())),
             (20, Burrow::from(&".B......CBDADCA".to_string())),
             (20, Burrow::from(&"..B.....CBDADCA".to_string())),
+            (40, Burrow::from(&"...B....CBDADCA".to_string())),
+            (60, Burrow::from(&"....B...CBDADCA".to_string())),
+            (80, Burrow::from(&".....B..CBDADCA".to_string())),
+            (90, Burrow::from(&"......B.CBDADCA".to_string())),
+            (500, Burrow::from(&"C......B.BDADCA".to_string())),
+            (400, Burrow::from(&".C.....B.BDADCA".to_string())),
             (200, Burrow::from(&"..C....B.BDADCA".to_string())),
             (200, Burrow::from(&"...C...B.BDADCA".to_string())),
+            (400, Burrow::from(&"....C..B.BDADCA".to_string())),
+            (600, Burrow::from(&".....C.B.BDADCA".to_string())),
+            (700, Burrow::from(&"......CB.BDADCA".to_string())),
+            (70, Burrow::from(&"B......BC.DADCA".to_string())),
+            (60, Burrow::from(&".B.....BC.DADCA".to_string())),
+            (40, Burrow::from(&"..B....BC.DADCA".to_string())),
             (20, Burrow::from(&"...B...BC.DADCA".to_string())),
             (20, Burrow::from(&"....B..BC.DADCA".to_string())),
+            (40, Burrow::from(&".....B.BC.DADCA".to_string())),
+            (50, Burrow::from(&"......BBC.DADCA".to_string())),
+            (9000, Burrow::from(&"D......BCB.ADCA".to_string())),
+            (8000, Burrow::from(&".D.....BCB.ADCA".to_string())),
+            (6000, Burrow::from(&"..D....BCB.ADCA".to_string())),
+            (4000, Burrow::from(&"...D...BCB.ADCA".to_string())),
             (2000, Burrow::from(&"....D..BCB.ADCA".to_string())),
             (2000, Burrow::from(&".....D.BCB.ADCA".to_string())),
+            (3000, Burrow::from(&"......DBCB.ADCA".to_string())),
         ]);
 
         for entry in &actual {
-            println!("{:?}", entry);
             assert!(expected.contains(entry))
         }
         assert_eq!(actual.len(), expected.len());
+
+        let actual2 = build_states(&Burrow::from(&"....D.............B...C".to_string()));
+        let expected2 = HashSet::from([
+            (40, Burrow::from(&"....DB................C".to_string())),
+            (50, Burrow::from(&"....D.B...............C".to_string())),
+        ]);
+        for entry in &actual2 {
+            assert!(expected2.contains(entry))
+        }
+        assert_eq!(actual2.len(), expected2.len());
     }
 
     #[test]
@@ -377,6 +372,11 @@ mod tests {
             Some(46)
         );
         assert_eq!(find_shortest_path(&sample_start()), Some(12521));
+
+        assert_eq!(
+            find_shortest_path(&expand_burrow(&sample_start())),
+            Some(44169)
+        );
     }
 
     #[test]

@@ -2,11 +2,9 @@
 //!
 //!
 
-use crate::day_24::Function::{Input, Literal, Operation};
 use crate::day_24::Instruction::{Inp, Op};
 use crate::day_24::OpType::{Add, Div, Eql, Mod, Mul};
 use crate::day_24::Param::{Lit, W, X, Y, Z};
-use std::fmt::{Display, Formatter};
 use std::fs;
 
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
@@ -34,18 +32,6 @@ impl From<&str> for Param {
     }
 }
 
-impl Param {
-    fn as_function(&self, register: &Register) -> Function {
-        match self {
-            Lit(num) => Literal(*num),
-            W => register.w.clone(),
-            X => register.x.clone(),
-            Y => register.y.clone(),
-            Z => register.z.clone(),
-        }
-    }
-}
-
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 enum OpType {
     Add,
@@ -53,27 +39,6 @@ enum OpType {
     Div,
     Mod,
     Eql,
-}
-
-impl OpType {
-    fn apply(&self, a: isize, b: isize) -> isize {
-        match self {
-            Add => a + b,
-            Mul => a * b,
-            Div => a / b,
-            Mod => a % b,
-            Eql => (a == b) as isize,
-        }
-    }
-    fn symbol(&self) -> &str {
-        match self {
-            Add => "+",
-            Mul => "*",
-            Div => "/",
-            Mod => "%",
-            Eql => "==",
-        }
-    }
 }
 
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
@@ -93,100 +58,6 @@ impl From<&str> for Instruction {
             "mod" => Op(Mod, Param::from(parts[1]), Param::from(parts[2])),
             "eql" => Op(Eql, Param::from(parts[1]), Param::from(parts[2])),
             _ => panic!("invalid op: {}", s),
-        }
-    }
-}
-
-#[derive(Eq, PartialEq, Debug, Clone)]
-enum Function {
-    Literal(isize),
-    Input(usize),
-    Operation(OpType, Box<Function>, Box<Function>),
-}
-
-impl Display for Function {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Literal(num) => write!(f, "{}", num),
-            Input(idx) => write!(f, "i[{}]", idx),
-            Operation(op_type, a, b) => write!(
-                f,
-                "({} {} {})",
-                format!("{}", a),
-                op_type.symbol(),
-                format!("{}", b)
-            ),
-        }
-    }
-}
-
-impl Function {
-    fn is_input(&self) -> bool {
-        match self {
-            Input(_) => true,
-            _ => false,
-        }
-    }
-
-    fn can_equal_input(&self) -> bool {
-        match self {
-            Literal(n) => *n < 9 && *n > 1,
-            Operation(Add, _, l) if l.literal().is_some() => l.literal().unwrap() < 8,
-            Operation(Add, l, _) if l.literal().is_some() => l.literal().unwrap() < 8,
-            _ => true,
-        }
-    }
-
-    fn literal(&self) -> Option<isize> {
-        return match self {
-            Literal(n) => Some(*n),
-            _ => None,
-        };
-    }
-
-    fn operation(op_type: OpType, fn_a: Function, fn_b: Function) -> Function {
-        Operation(op_type, Box::new(fn_a), Box::new(fn_b))
-    }
-
-    fn result(&self, inputs: &Vec<isize>) -> Option<isize> {
-        match self {
-            Literal(num) => Some(*num),
-            Input(n) => inputs.get(*n).map(|&a| a),
-            Operation(op_type, a, b) => a
-                .result(inputs)
-                .zip(b.result(inputs))
-                .map(|(a, b)| op_type.apply(a, b)),
-        }
-    }
-}
-
-#[derive(Eq, PartialEq, Debug)]
-struct Register {
-    input_pos: usize,
-    w: Function,
-    x: Function,
-    y: Function,
-    z: Function,
-}
-
-impl Register {
-    fn new() -> Register {
-        Register {
-            input_pos: 0,
-            w: Literal(0),
-            x: Literal(0),
-            y: Literal(0),
-            z: Literal(0),
-        }
-    }
-
-    fn with(&self, p: Param, fun: &Function, inc: bool) -> Register {
-        Register {
-            input_pos: self.input_pos + inc as usize,
-            w: if p == W { fun.clone() } else { self.w.clone() },
-            x: if p == X { fun.clone() } else { self.x.clone() },
-            y: if p == Y { fun.clone() } else { self.y.clone() },
-            z: if p == Z { fun.clone() } else { self.z.clone() },
         }
     }
 }
@@ -265,11 +136,10 @@ fn analyse_program(program: Vec<Instruction>) -> (isize, isize) {
 
 #[cfg(test)]
 mod tests {
-    use crate::day_24::Function::{Input, Literal};
+    use crate::day_24::parse_input;
     use crate::day_24::Instruction::{Inp, Op};
-    use crate::day_24::OpType::{Add, Eql, Mod, Mul};
+    use crate::day_24::OpType::{Eql, Mul};
     use crate::day_24::Param::{Lit, X, Z};
-    use crate::day_24::{parse_input, Function};
 
     #[test]
     fn can_parse() {

@@ -153,15 +153,189 @@
 <span id="153">153</span>
 <span id="154">154</span>
 <span id="155">155</span>
-</pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 24 - _Title_](https://adventofcode.com/2021/day/24)</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+</pre><pre class="rust"><code><span class="doccomment">//! This is my solution for [Advent of Code - Day 24 - _Arithmetic Logic Unit_](https://adventofcode.com/2021/day/24)</span>
 <span class="doccomment">//!</span>
+<span class="doccomment">//! Today was a challenge of interpreting an assembly language adjacent program and working out the underlying logic</span>
+<span class="doccomment">//! about which inputs it accepts or rejects. Looking through the puzzle data it seemed like a lot of statements were</span>
+<span class="doccomment">//! no-ops so I first wondered if the puzzle was just to factor out the redundant commands and brute0force it, but after</span>
+<span class="doccomment">//! a bit of trying to write a parser that would reduce the program to just the key bits in calculating the final `z`</span>
+<span class="doccomment">//! value. This was a bit of a dead end, but did clue me into the repeating nature of the input. The no-op</span>
+<span class="doccomment">//! operations we&#39;re repeated later on, but in the later context they did do something. Also I had written [parse_input]</span>
+<span class="doccomment">//! and [`Instruction::from`], and [`Param`] and [`OpType`] to have a structured representation of the commands.</span>
 <span class="doccomment">//!</span>
+<span class="doccomment">//! At this point I was working things out in a [rather disorganised spreadsheet](https://docs.google.com/spreadsheets/d/1EvNOOa-1rTDfxe4yj2pe-3x6HPskKhz1nLXUFkL9M64/edit)</span>
+<span class="doccomment">//! Sheet 1 is me stepping through the logic. Copy of sheet 1 shows the program split into its repeating sections.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ![Working out spreadsheet](/assets/img/day-24.png &quot;A screenshot of my working out spread sheet showing the</span>
+<span class="doccomment">//! program split into 18 row sections laid out next to each other. Underneath there is working showing variables</span>
+<span class="doccomment">//! being added/removed from the stack represented by `z`&quot;)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The MONAD program is a loop that repeats the same 18 lines, with a few variable values. Here is a walk through of</span>
+<span class="doccomment">//! my first 18 line section:</span>
+<span class="doccomment">//! ```text</span>
+<span class="doccomment">//!  1. inp w      |  Read the next input into `w`  </span>
+<span class="doccomment">//!  2. mul x 0    |  Reset `x` to 0</span>
+<span class="doccomment">//!  3. add x z    |  Copy z into x</span>
+<span class="doccomment">//!  4. mod x 26   |  z is treated like a stack of base 26 numbers, this mod sets</span>
+<span class="doccomment">//!                |  `x` to the top of the stack</span>
+<span class="doccomment">//!  5. div z 1    |  The number here is always 1 or 26. `z / 1` is a no-op,</span>
+<span class="doccomment">//!                |  `z / 26` pops the `prev` number from the top of the `z`</span>
+<span class="doccomment">//!                |  stack.</span>
+<span class="doccomment">//!  6. add x 13   |  The number here is variable per section, I&#39;ll call it `n`.</span>
+<span class="doccomment">//!                |  This is adding `n` to `prev`.</span>
+<span class="doccomment">//!  7. eql x w    |  `1` if `prev` + `n` == `inout` (`w` is the latest digit</span>
+<span class="doccomment">//!                |  input.)</span>
+<span class="doccomment">//!  8. eql x 0    |  This is inverting line 7 so `prev` + `n` != `input`</span>
+<span class="doccomment">//!  9. mul y 0    |  Reset `y` to 0</span>
+<span class="doccomment">//! 10. add y 25   |  Set `y` to 25</span>
+<span class="doccomment">//! 11. mul y x    |  `x` is 1 if the modified previous stack value != `input`, 0</span>
+<span class="doccomment">//!                |  otherwise. So `y` is now either `0` or `25` based on the</span>
+<span class="doccomment">//!                |  same condition.</span>
+<span class="doccomment">//! 12. add y 1    |  `y` is now either 1 or 26 based on the same condition.</span>
+<span class="doccomment">//! 13. mul z y    |  If `y` is 1, then this is a no-op otherwise this is shifting</span>
+<span class="doccomment">//!                |  0 onto the top of the `z` stack</span>
+<span class="doccomment">//! 14. mul y 0    |  Reset `y` to 0 again</span>
+<span class="doccomment">//! 15. add y w    |  Copy the input into `y`</span>
+<span class="doccomment">//! 16. add y 15   |  The literal here varies, I&#39;ll call it `p`.</span>
+<span class="doccomment">//! 17. mul y x    |  Same idea as line 11, if `prev` + `n` != `input` this is a</span>
+<span class="doccomment">//!                |  no-op, if `prev` + `n` == `input` y is now 0.</span>
+<span class="doccomment">//! 18. add z y    |  If `y` is still non-zero, update the 0 we pushed onto the  </span>
+<span class="doccomment">//!                |  stack to be `input` + `p`.</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! So written as rust code this could be seen as:</span>
+<span class="doccomment">//! ```rust</span>
+<span class="doccomment">//! fn section(input: isize, z: &amp;mut Vec&lt;isize&gt;, pop: bool, n: isize, p: isize) {</span>
+<span class="doccomment">//!     let x = z.last().unwrap() + n;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     if pop {z.pop()};</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     if input != x {</span>
+<span class="doccomment">//!         z.push(input + p);</span>
+<span class="doccomment">//!     };</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//! It is also worth noting that as `input` is in the range `1` - `9`. So for some of the inputs it is guaranteed</span>
+<span class="doccomment">//! that they&#39;ll be pushed onto the stack regardless of input. I stepped through the whole 14 sections by hand and</span>
+<span class="doccomment">//! worked out that for z to be 0 (i.e. the stack is empty) each time `prev + n` could equal the input, it had to</span>
+<span class="doccomment">//! match as the guaranteed pop operations matched the count of the guaranteed pushes, so each time it was possible</span>
+<span class="doccomment">//! not to push we had to take it, or numbers would be left on the stack. This gave me the criteria for the valid</span>
+<span class="doccomment">//! numbers. I made some human errors stepping through the constraints so the number I worked out failed, but since</span>
+<span class="doccomment">//! this is a coding problem I should eliminate that by coding the analysis instead. [`analyse_program`] does just</span>
+<span class="doccomment">//! that. Working out the maximum valid model number (part one), and then part two (the minimum) was a minor</span>
+<span class="doccomment">//! modification.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Overall, whilst there is some satisfaction in having worked out what was going on, I was not a fan of today&#39;s</span>
+<span class="doccomment">//! puzzle. The answer was in deduction, so examples that actually helped a solver would have given the game away.</span>
+<span class="doccomment">//! This meant the usual plan of build some tests from the example as a guide doesn&#39;t apply and makes the whole</span>
+<span class="doccomment">//! experience more frustrating when it doesn&#39;t work (as it didn&#39;t for me when stepping through by hand). The only</span>
+<span class="doccomment">//! feedback is that your answer is wrong, but you also can&#39;t go looking for hints as to why, as that gives the whole</span>
+<span class="doccomment">//! game away.</span>
+
+<span class="kw">use</span> <span class="ident">std::fs</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_24::Instruction</span>::{<span class="ident">Inp</span>, <span class="ident">Op</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_24::OpType</span>::{<span class="ident">Add</span>, <span class="ident">Div</span>, <span class="ident">Eql</span>, <span class="ident">Mod</span>, <span class="ident">Mul</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::day_24::Param</span>::{<span class="ident">Lit</span>, <span class="ident">W</span>, <span class="ident">X</span>, <span class="ident">Y</span>, <span class="ident">Z</span>};
-<span class="kw">use</span> <span class="ident">std::fs</span>;
 
+<span class="comment">// Represents a operation&#39;s parameter(s) as either one of the four memory addresses or a literal number</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">enum</span> <span class="ident">Param</span> {
     <span class="ident">W</span>,
@@ -172,6 +346,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Param</span> {
+    <span class="doccomment">/// If the string parses as a number treat it as a literal, otherwise match it to a memory address or</span>
+    <span class="doccomment">/// panic if it&#39;s not valid.</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">num</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">parse</span>() {
             <span class="ident">Lit</span>(<span class="ident">num</span>)
@@ -187,6 +363,8 @@
     }
 }
 
+<span class="doccomment">/// Whilst there are six instructions the `Inp` is different enough from the others that it is easier to split it out.</span>
+<span class="doccomment">/// This then encodes the type of the remaining five op codes.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">enum</span> <span class="ident">OpType</span> {
     <span class="ident">Add</span>,
@@ -196,6 +374,7 @@
     <span class="ident">Eql</span>,
 }
 
+<span class="doccomment">/// Encode each line as either a read from input, or an operation</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">enum</span> <span class="ident">Instruction</span> {
     <span class="ident">Inp</span>(<span class="ident">Param</span>),
@@ -203,6 +382,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Instruction</span> {
+    <span class="doccomment">/// Parses a line of the input</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&quot; &quot;</span>).<span class="ident">collect</span>();
         <span class="kw">match</span> <span class="ident">parts</span>[<span class="number">0</span>] {
@@ -225,64 +405,78 @@
     <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;res/day-24-input&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;Failed to read file&quot;</span>);
     <span class="kw">let</span> <span class="ident">program</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">parse_input</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>);
     <span class="kw">let</span> (<span class="ident">min</span>, <span class="ident">max</span>) <span class="op">=</span> <span class="ident">analyse_program</span>(<span class="ident">program</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;The minimum model number is {}.&quot;</span>, <span class="ident">min</span>);
     <span class="macro">println!</span>(<span class="string">&quot;The maximum model number is {}.&quot;</span>, <span class="ident">max</span>);
+    <span class="macro">println!</span>(<span class="string">&quot;The minimum model number is {}.&quot;</span>, <span class="ident">min</span>);
 }
 
+<span class="doccomment">/// Parse each line of the puzzle input program return with [`Instruction::from`], return the program as a list fo</span>
+<span class="doccomment">/// instructions.</span>
 <span class="kw">fn</span> <span class="ident">parse_input</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span> {
     <span class="ident">input</span>.<span class="ident">lines</span>().<span class="ident">map</span>(<span class="ident">Instruction::from</span>).<span class="ident">collect</span>()
 }
 
+<span class="doccomment">/// First split the program into its 18-line sections. For each extract the three variables. Tracking what `input +</span>
+<span class="doccomment">/// p` values are on the stack, and where it is possible to avoid pushing to the stack, storing that as a condition.</span>
+<span class="doccomment">/// Then iterate through these conditions working out where parts of the input are constrained by them and updating the</span>
+<span class="doccomment">/// minimum and maximum numbers as appropriate. Finally return this minimum (part two) and maximum (part one).</span>
 <span class="kw">fn</span> <span class="ident">analyse_program</span>(<span class="ident">program</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span>) -&gt; (<span class="ident">isize</span>, <span class="ident">isize</span>) {
+    <span class="comment">// track the guaranteed push and pop operations</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">isize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+    <span class="comment">// track the conditions that prevent pushing to the stack</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">conditions</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>, <span class="ident">isize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
     <span class="kw">let</span> <span class="ident">chunks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Instruction</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">program</span>.<span class="ident">chunks</span>(<span class="number">18</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">chunk</span><span class="op">|</span> <span class="ident">chunk</span>.<span class="ident">to_vec</span>()).<span class="ident">collect</span>();
 
     <span class="ident">chunks</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">for_each</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">chunk</span>)<span class="op">|</span> {
-        <span class="kw">let</span> <span class="kw-2">&amp;</span>(<span class="ident">prev_key</span>, <span class="ident">prev_add</span>) <span class="op">=</span> <span class="ident">stack</span>.<span class="ident">get</span>(<span class="ident">stack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span>(<span class="number">0</span>, <span class="number">0</span>));
+        <span class="comment">// peek at the top of the stack and account for it being empty for the first chunk.</span>
+        <span class="kw">let</span> <span class="kw-2">&amp;</span>(<span class="ident">prev_key</span>, <span class="ident">prev_p</span>) <span class="op">=</span> <span class="ident">stack</span>.<span class="ident">last</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span>(<span class="number">0</span>, <span class="number">0</span>));
 
-        <span class="macro">println!</span>(<span class="string">&quot;{:?}, {:?}, {:?}&quot;</span>, <span class="ident">chunk</span>[<span class="number">4</span>], <span class="ident">chunk</span>[<span class="number">5</span>], <span class="ident">chunk</span>[<span class="number">15</span>]);
-
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Op</span>(<span class="ident">Div</span>, <span class="ident">Z</span>, <span class="ident">Lit</span>(<span class="ident">v</span>)) <span class="op">=</span> <span class="ident">chunk</span>[<span class="number">4</span>] {
-            <span class="macro">println!</span>(<span class="string">&quot;Chunk {} check pop {}&quot;</span>, <span class="ident">i</span>, <span class="ident">v</span>);
-            <span class="kw">if</span> <span class="ident">v</span> <span class="op">==</span> <span class="number">26</span> {
-                <span class="macro">println!</span>(<span class="string">&quot;Chunk {} pop&quot;</span>, <span class="ident">i</span>);
+        <span class="comment">// Line 5 (chunk lines are 0 indexed) is either 1 or 26. If it&#39;s 26 this causes a pop from the stack.</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Op</span>(<span class="ident">Div</span>, <span class="ident">Z</span>, <span class="ident">Lit</span>(<span class="ident">div</span>)) <span class="op">=</span> <span class="ident">chunk</span>[<span class="number">4</span>] {
+            <span class="kw">if</span> <span class="ident">div</span> <span class="op">==</span> <span class="number">26</span> {
                 <span class="ident">stack</span>.<span class="ident">pop</span>();
             }
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Op</span>(<span class="ident">Add</span>, <span class="ident">X</span>, <span class="ident">Lit</span>(<span class="ident">x_add</span>)) <span class="op">=</span> <span class="ident">chunk</span>[<span class="number">5</span>] {
-            <span class="macro">println!</span>(<span class="string">&quot;{} + {} + {}: {}&quot;</span>, <span class="ident">prev_key</span>, <span class="ident">prev_add</span>, <span class="ident">x_add</span>, <span class="ident">i</span>);
-
-            <span class="kw">if</span> <span class="ident">x_add</span> <span class="op">+</span> <span class="ident">prev_add</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span> {
-                <span class="ident">conditions</span>.<span class="ident">push</span>((<span class="ident">prev_key</span>, <span class="ident">i</span>, <span class="ident">x_add</span> <span class="op">+</span> <span class="ident">prev_add</span>));
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Op</span>(<span class="ident">Add</span>, <span class="ident">Y</span>, <span class="ident">Lit</span>(<span class="ident">y_add</span>)) <span class="op">=</span> <span class="ident">chunk</span>[<span class="number">15</span>] {
-                <span class="ident">stack</span>.<span class="ident">push</span>((<span class="ident">i</span>, <span class="ident">y_add</span>));
+        <span class="comment">// Line 6 encodes `n`</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Op</span>(<span class="ident">Add</span>, <span class="ident">X</span>, <span class="ident">Lit</span>(<span class="ident">n</span>)) <span class="op">=</span> <span class="ident">chunk</span>[<span class="number">5</span>] {
+            <span class="comment">// The previous input plus the previous `p` plus the current `n` must equal the current input to prevent</span>
+            <span class="comment">// pushing to the stack. Since prev input must be at least 1, if n + prev_p &gt; 8 then input must be &gt; 9,</span>
+            <span class="comment">// which is not possible. There is also a lower bound but that doesn&#39;t occur in the puzzle program.</span>
+            <span class="kw">if</span> <span class="ident">n</span> <span class="op">+</span> <span class="ident">prev_p</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span> {
+                <span class="comment">// We have to prevent all unnecessary pushes, so record the condition that will prevent this push</span>
+                <span class="ident">conditions</span>.<span class="ident">push</span>((<span class="ident">i</span>, <span class="ident">prev_key</span>, <span class="ident">n</span> <span class="op">+</span> <span class="ident">prev_p</span>));
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Op</span>(<span class="ident">Add</span>, <span class="ident">Y</span>, <span class="ident">Lit</span>(<span class="ident">p</span>)) <span class="op">=</span> <span class="ident">chunk</span>[<span class="number">15</span>] {
+                <span class="comment">// Otherwise record that this `input + p` must be pushed to the top of the stack</span>
+                <span class="ident">stack</span>.<span class="ident">push</span>((<span class="ident">i</span>, <span class="ident">p</span>));
             }
         }
     });
 
-    <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">stack</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">conditions</span>);
-
+    <span class="comment">// Without conditions the min is 11111111111111 and the max is 99999999999999. Use these as starting values...</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">min</span> <span class="op">=</span> [<span class="number">9</span>; <span class="number">14</span>];
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">max</span> <span class="op">=</span> [<span class="number">1</span>; <span class="number">14</span>];
+    <span class="comment">// then loop through the conditions applying their constraints, which are in the form `input_a` == `input_b` + `v`</span>
     <span class="kw">for</span> (<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">conditions</span> {
+        <span class="comment">// b - something == a so b can be as high as possible (9) a can be as low as possible (1) and a can only go</span>
+        <span class="comment">// up to `9 - mod(v)`, and b can only go down to `9 + mod(v)`</span>
         <span class="kw">if</span> <span class="ident">v</span> <span class="op">&lt;</span> <span class="number">0</span> {
-            <span class="ident">max</span>[<span class="ident">b</span>] <span class="op">=</span> <span class="number">9</span> <span class="op">+</span> <span class="ident">v</span>;
-            <span class="ident">max</span>[<span class="ident">a</span>] <span class="op">=</span> <span class="number">9</span>;
-
-            <span class="ident">min</span>[<span class="ident">a</span>] <span class="op">=</span> <span class="number">1</span> <span class="op">-</span> <span class="ident">v</span>;
-            <span class="ident">min</span>[<span class="ident">b</span>] <span class="op">=</span> <span class="number">1</span>;
-        } <span class="kw">else</span> {
-            <span class="ident">max</span>[<span class="ident">a</span>] <span class="op">=</span> <span class="number">9</span> <span class="op">-</span> <span class="ident">v</span>;
+            <span class="ident">max</span>[<span class="ident">a</span>] <span class="op">=</span> <span class="number">9</span> <span class="op">+</span> <span class="ident">v</span>;
             <span class="ident">max</span>[<span class="ident">b</span>] <span class="op">=</span> <span class="number">9</span>;
 
-            <span class="ident">min</span>[<span class="ident">b</span>] <span class="op">=</span> <span class="number">1</span> <span class="op">+</span> <span class="ident">v</span>;
+            <span class="ident">min</span>[<span class="ident">b</span>] <span class="op">=</span> <span class="number">1</span> <span class="op">-</span> <span class="ident">v</span>;
             <span class="ident">min</span>[<span class="ident">a</span>] <span class="op">=</span> <span class="number">1</span>;
+        }
+        <span class="comment">// otherwise v is positive and it works the other way round.</span>
+        <span class="kw">else</span> {
+            <span class="ident">max</span>[<span class="ident">b</span>] <span class="op">=</span> <span class="number">9</span> <span class="op">-</span> <span class="ident">v</span>;
+            <span class="ident">max</span>[<span class="ident">a</span>] <span class="op">=</span> <span class="number">9</span>;
+
+            <span class="ident">min</span>[<span class="ident">a</span>] <span class="op">=</span> <span class="number">1</span> <span class="op">+</span> <span class="ident">v</span>;
+            <span class="ident">min</span>[<span class="ident">b</span>] <span class="op">=</span> <span class="number">1</span>;
         }
     }
 
+    <span class="comment">// convert the calculated arrays of digits into numbers and return the min/max pair.</span>
     <span class="kw">return</span> (
         <span class="ident">min</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="kw-2">&amp;</span><span class="ident">v</span><span class="op">|</span> (<span class="ident">acc</span> <span class="op">*</span> <span class="number">10</span>) <span class="op">+</span> <span class="ident">v</span>),
         <span class="ident">max</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="kw-2">&amp;</span><span class="ident">v</span><span class="op">|</span> (<span class="ident">acc</span> <span class="op">*</span> <span class="number">10</span>) <span class="op">+</span> <span class="ident">v</span>),

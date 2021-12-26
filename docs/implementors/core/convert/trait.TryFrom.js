@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["advent_of_code_2021"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.57.0/core/convert/trait.TryFrom.html\" title=\"trait core::convert::TryFrom\">TryFrom</a>&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/1.57.0/std/primitive.char.html\">char</a>&gt; for <a class=\"enum\" href=\"advent_of_code_2021/day_25/enum.Cell.html\" title=\"enum advent_of_code_2021::day_25::Cell\">Cell</a>","synthetic":false,"types":["advent_of_code_2021::day_25::Cell"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

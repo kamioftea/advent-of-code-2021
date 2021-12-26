@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="This is my solution for Advent of Code - Day 25 - Sea Cucumber"><meta name="keywords" content="rust, rustlang, rust-lang, day_25"><title>advent_of_code_2021::day_25 - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../advent_of_code_2021/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><h2 class="location">Module day_25</h2><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><div id="sidebar-vars" data-name="day_25" data-ty="mod" data-relpath="./"></div><script defer src="./sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Module <a href="../index.html">advent_of_code_2021</a>::<wbr><a class="mod" href="#">day_25</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../src/advent_of_code_2021/day_25.rs.html#1-484" title="goto source code">[src]</a></span></h1><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>This is my solution for <a href="https://adventofcode.com/2021/day/25">Advent of Code - Day 25 - <em>Sea Cucumber</em></a></p>
+<p>After the last two days, today was a refreshing change back to a more ‘normal’ Advent of Code puzzle. We were given
+a grid representing herds of Sea Cucumbers wanting to move in a certain direction and had to iterate those moves
+until the grid stabilised with all the sea cucumbers blocked by another one. A slight twist was some ‘strong
+currents’ that caused the grid to wrap around in both x and y.</p>
+<p><a href="enum.Cell.html" title="Cell"><code>Cell</code></a> represents the three possibilities for any cell in the grid: Empty, Rightwards moving cucumber,
+downwards moving cucumber. <a href="struct.Grid.html" title="Grid"><code>Grid</code></a> stores the whole grid similar to <a href="../util/grid/index.html" title="crate::util::grid"><code>crate::util::grid</code></a>, but different enough
+that it was easier to just re-implement it. <a href="struct.Grid.html#method.from" title="Grid::from">Grid::from</a> parses the puzzle input with help from <a href="enum.Cell.html#method.try_from" title="Cell::try_from"><code>Cell::try_from</code></a>.
+<a href="struct.Grid.html#method.fmt" title="Grid::fmt"><code>Grid::fmt</code></a> and <a href="enum.Cell.html#method.fmt" title="Cell::fmt"><code>Cell::fmt</code></a> go the other way for ease of testing. <a href="struct.Grid.html#method.get" title="Grid::get"><code>Grid::get</code></a>, <a href="struct.Grid.html#method.pos_of" title="Grid::pos_of"><code>Grid::pos_of</code></a>,
+<a href="struct.Grid.html#method.swap" title="Grid::swap"><code>Grid::swap</code></a>, and <a href="struct.Grid.html#method.can_move" title="Grid::can_move"><code>Grid::can_move</code></a> are all utilities that help with iterating the grid. <a href="struct.Grid.html#method.iterate" title="Grid::iterate"><code>Grid::iterate</code></a>
+completes a single iteration step of each herd trying to move. This is where the one efficiency trick of the day is
+apparent. The grid has a caches of the cucumbers that <em>might</em> be able to move. Starting with all the cucumbers
+assigned to a cache for their direction, only 1) the sea cucumbers that have moved, and 2) the sea cucumbers
+positioned so they could move into the vacated cell, are added to the active set for the next iteration. This
+achieves two things: It limits the cells we need to check each iteration, and it is a handy indicator of if the
+grid has stabilised. As only moving cucumbers cause additions to the active sets, the grid is stable if and only
+if the two caches are empty.</p>
+<p>That solves part one, and part two was the traditional “finish all the tasks and click the button to resolve the
+plot” task. I was able to complete each task on the day this year (just - day 24 was finally done at 2am on 25th
+UTC, so 3 hours before the cutoff), so this was already complete for me.</p>
+<div class="example-wrap"><pre class="language-text"><code>      --------Part 1--------   --------Part 2--------
+Day       Time   Rank  Score       Time   Rank  Score
+ 25   15:06:43   8974      0   15:07:35   5460      0
+ 24   21:15:47   5841      0   21:16:30   5687      0
+ 23   08:47:15   5672      0   19:27:15   6218      0
+ 22   07:00:04   9762      0   07:01:31   3769      0
+ 21   05:37:25  11193      0   06:36:50   6331      0
+ 20   07:51:38   8898      0   07:58:09   8586      0
+ 19   13:14:31   5465      0   13:37:20   5294      0
+ 18   19:49:26  12383      0   20:00:08  12192      0
+ 17   04:47:21  10448      0   05:52:20  10205      0
+ 16   07:07:32   9928      0   07:16:09   8599      0
+ 15   05:47:19  12724      0   07:05:51  10514      0
+ 14   05:39:34  20863      0   07:04:42  14630      0
+ 13   05:19:33  17344      0   05:40:01  16739      0
+ 12   14:30:26  26961      0   14:55:24  24961      0
+ 11   08:27:10  21478      0   08:32:38  21179      0
+ 10   07:15:30  27171      0   08:06:12  26391      0
+  9   08:32:37  32148      0   11:48:09  27638      0
+  8   07:01:34  32052      0   08:06:36  19511      0
+  7   04:14:51  28137      0   04:40:14  27200      0
+  6   04:50:17  27578      0   04:53:08  20498      0
+  5   07:05:00  26127      0   07:56:49  24779      0
+  4   14:56:36  42423      0   15:45:56  40155      0
+  3   06:10:06  46408      0   08:06:50  34497      0
+  2   04:22:10  39520      0   04:29:07  37024      0
+  1   08:11:39  47103      0   09:01:48  43667      0</code></pre></div></div></details><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Grid.html" title="advent_of_code_2021::day_25::Grid struct">Grid</a></div><div class="item-right docblock-short"><p>Represent a grid as a vector of cells, with a width and height to enable quick lookups from x/y co-ordinates, and
+to help with wrapping around logic. Also keep <a href="https://doc.rust-lang.org/1.57.0/std/collections/hash/set/struct.HashSet.html" title="HashSet"><code>HashSet</code></a>s of the RIGHT and DOWN cells that may be able to move,
+to limit the cells we need to check when iterating the grid</p>
+</div></div></div><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Cell.html" title="advent_of_code_2021::day_25::Cell enum">Cell</a></div><div class="item-right docblock-short"><p>Represent the current state of a cell in the grid</p>
+</div></div></div><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
+<div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.run.html" title="advent_of_code_2021::day_25::run fn">run</a></div><div class="item-right docblock-short"><p>The entry point for running the solutions with the ‘real’ puzzle input.</p>
+</div></div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="advent_of_code_2021" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script>
+</body></html>

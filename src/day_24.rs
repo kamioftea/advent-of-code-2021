@@ -11,7 +11,7 @@
 //! At this point I was working things out in a [rather disorganised spreadsheet](https://docs.google.com/spreadsheets/d/1EvNOOa-1rTDfxe4yj2pe-3x6HPskKhz1nLXUFkL9M64/edit)
 //! Sheet 1 is me stepping through the logic. Copy of sheet 1 shows the program split into its repeating sections.
 //!
-//! ![Working out spreadsheet](/assets/img/day-24.png "A screenshot of my working out spread sheet showing the
+//! ![Working out spreadsheet](../../assets/img/day-24.png "A screenshot of my working out spread sheet showing the
 //! program split into 18 row sections laid out next to each other. Underneath there is working showing variables
 //! being added/removed from the stack represented by `z`")
 //!

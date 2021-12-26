@@ -25,7 +25,7 @@
 //! of side-tunnels. [`build_states`] returns a list of possible states, and the cost to move there from the given
 //! state. This is where the worst of the mess is, as it relies on a lot of number manipulation tricks to turn the flat
 //! 15/23 cell list of cells into something that represents the more complex burrow structure. [`find_shortest_path`] is
-//! just implementing Dijkstra's Algorithm and is very similar to [`crate::day_15::find_shortest_path`] with a different
+//! just implementing Dijkstra's Algorithm and is very similar to [`crate::day_15`]'s version, but with a different
 //! adjacency/cost implementation. Finally [`expand_burrow`] handles turning the input for part one into the input for
 //! part two.
 

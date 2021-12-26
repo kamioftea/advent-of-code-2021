@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Instruction",""],["OpType",""],["Param",""]],"fn":[["analyse_program",""],["parse_input",""],["run","The entry point for running the solutions with the ‘real’ puzzle input."]]});

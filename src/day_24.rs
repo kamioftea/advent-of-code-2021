@@ -83,7 +83,7 @@ use crate::day_24::Instruction::{Inp, Op};
 use crate::day_24::OpType::{Add, Div, Eql, Mod, Mul};
 use crate::day_24::Param::{Lit, W, X, Y, Z};
 
-// Represents a operation's parameter(s) as either one of the four memory addresses or a literal number
+/// Represents a operation's parameter(s) as either one of the four memory addresses or a literal number
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
 enum Param {
     W,

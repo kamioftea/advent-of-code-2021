@@ -24,11 +24,17 @@ jobs:
         git merge origin/main
     - name: Build Docs
       run: cargo doc
+    - name: Build Blog
+      run: |
+        cd pubs
+        npm install
+        npm run build
     - name: Commit Docs
       run: |
         rm -rf docs 
         cp -r target/doc docs 
         cp -r assets docs/
+        cp -r pubs/_site docs/
         git add .
         git commit -m"Commit doc updates" -a || echo "No changes to commit"
         git push

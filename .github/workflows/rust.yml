@@ -9,9 +9,7 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Build
@@ -22,3 +20,8 @@ jobs:
       run: |
         export RUSTDOCFLAGS="-Dwarnings"
         cargo doc
+    - name: Test Blog
+      run: |
+        cd pubs
+        npm install
+        npm run build

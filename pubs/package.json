@@ -1,0 +1,24 @@
+{
+  "name": "advent-of-code-pubs",
+  "version": "0.0.0",
+  "description": "Static site build for advent of code blogs",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm:watch:*\"",
+    "watch:11ty": "npx @11ty/eleventy --serve --port=8081",
+    "watch:scss": "npx sass -Inode_modules/foundation-sites/scss _includes/stylesheets/root.scss _site/root.css --watch",
+    "build": "npx sass -Inode_modules/foundation-sites/scss _includes/stylesheets/root.scss _site/root.css && npx @11ty/eleventy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kamioftea/advent-of-code-2021/pubs"
+  },
+  "author": "Jeff Horton <contact@jeff-horton.uk>",
+  "license": "ISC",
+  "devDependencies": {
+    "@11ty/eleventy": "^1.0.0",
+    "concurrently": "^7.0.0",
+    "foundation-sites": "^6.7.4",
+    "sass": "^1.49.9"
+  }
+}

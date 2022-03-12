@@ -30,6 +30,8 @@ jobs:
         npm install
         npm run build
     - name: Commit Docs
+      env:
+        PATH_PREFIX: /advent_of_code_2021
       run: |
         rm -rf docs 
         cp -r target/doc docs 

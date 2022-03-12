@@ -2489,7 +2489,7 @@ section.main {
 
 .cover-image {
   aspect-ratio: 4/1;
-  background: url("/assets/images/cover-image.png") no-repeat 50% 50%;
+  background: no-repeat 50% 50%;
   background-size: cover;
   display: grid;
   margin-bottom: 1rem;

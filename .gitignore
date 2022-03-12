@@ -1,5 +1,7 @@
 /target
 **/*.rs.bk
 /.idea/
-/*.iml
+*.iml
 /res/
+/pubs/node_modules/
+/pubs/_site/

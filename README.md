@@ -26,13 +26,14 @@ before they can be merged.
 When the pull request is merged into main, a [second GitHub action](./.github/workflows/rust-docs.yml) is triggered.
 This:
 
-- Merges the main branch changes into the ghdocs branch
-- Build the docs
+- Merges the main branch changes into the `ghpages` branch
+- Builds the docs with `rustdoc`
+- Builds the static landing page with [11ty](https://www.11ty.dev/)
 - Deletes the old `/docs`, and copied the updated version in their place
 - Commits and pushes any changes.
 
-The [GitHub Pages Site](https://kamioftea.github.io/advent-of-code-2021/advent_of_code_2021/) for the repository is set
-to be publised from the `/docs` folder of the ghpages branch, so this commit and push triggers a re-deployment of the 
+The [GitHub Pages Site](https://kamioftea.github.io/advent-of-code-2021/) for the repository is set
+to be published from the `/docs` folder of the `ghpages` branch, so this commit and push triggers a re-deployment of the 
 pages site with the updated content automatically.
 
 ## Previous years:

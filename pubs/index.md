@@ -21,7 +21,7 @@ introduction to the challenge. I've filled this gap with some static pages built
     <p>{{solution.title}}</p>
     <p>
       [<!--suppress HtmlUnknownTarget --><a href="{{solution.url}}">Puzzle</a>]
-      [<a href="https://kamioftea.github.io/advent-of-code-2021/advent_of_code_2021/day_{{solution.day}}/index.html">Write Up</a>]
+      [<a href="https://kamioftea.github.io/advent-of-code-2021/advent_of_code_2021/day_{{solution.day}}/index.html">Write&nbspUp</a>]
     </p>
   </div>
 {% endfor %}

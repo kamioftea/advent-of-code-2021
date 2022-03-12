@@ -32,7 +32,7 @@ This:
 - Deletes the old `/docs`, and copied the updated version in their place
 - Commits and pushes any changes.
 
-The [GitHub Pages Site](https://kamioftea.github.io/advent-of-code-2021/) for the repository is set
+The [GitHub Pages Site](https://kamioftea.github.io/advent-of-code-2021) for the repository is set
 to be published from the `/docs` folder of the `ghpages` branch, so this commit and push triggers a re-deployment of the 
 pages site with the updated content automatically.
 

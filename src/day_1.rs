@@ -16,7 +16,7 @@
 use std::fs;
 
 /// This is the entry point for the day's puzzle solutions. It will load the input file, parse it
-/// into a `Vec<i32` and pass it to the relevant functions for each part.
+/// into a `Vec<i32>` and pass it to the relevant functions for each part.
 pub fn run() {
     let contents = fs::read_to_string("res/day-1-input").expect("Failed to read file");
     let depths = contents

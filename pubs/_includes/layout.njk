@@ -7,6 +7,13 @@
 	<title>{{ title }}</title>
 </head>
 <body>
-	{{ content | safe }}
+	<header class="cover-image">
+		<div class="title-wrapper">
+		<h1>{{ header }}</h1>
+		</div>
+	</header>
+	<section class="main">
+	  {{ content | safe }}
+	</section>
 </body>
 </html>

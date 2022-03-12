@@ -64,3 +64,59 @@
   }
 }
 
+html, body {
+  min-height: 100%;
+}
+
+body {
+  display: grid;
+}
+
+section.main {
+  width: min(775px, 100%);
+  justify-self: center;
+}
+
+.cover-image {
+  aspect-ratio: 4 / 1;
+  background: url('/assets/images/cover-image.png') no-repeat 50% 50%;
+  background-size: cover;
+  display: grid;
+  margin-bottom: $global-margin;
+
+  justify-items: stretch;
+  align-items: end;
+
+  .title-wrapper {
+    background-color: rgba($black, 50%);
+    padding: $global-padding;
+    display: grid;
+  }
+
+  h1 {
+    padding: 0;
+    margin: 0;
+    width: min(775px, 100%);
+    justify-self: center;
+  }
+}
+
+.solutions-list {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: $global-margin;
+
+  .solution {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: thin darken($primary-color, 40%) solid;
+    padding: $global-padding;
+    margin: 1px;
+
+    p {
+      margin-bottom: 0;
+    }
+  }
+}
